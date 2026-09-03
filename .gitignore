@@ -1,16 +1,32 @@
+# Dependencies
 node_modules/
-dist/
+**/node_modules/
+
+# Environment Variables
+.env
+.env.*
+!.env.example
+
+# Next.js / Frontend Build
 .next/
 out/
 build/
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-.DS_Store
-*.log
-coverage/
-typechain-types/
+dist/
+
+# Hardhat / Smart Contracts Build
 artifacts/
 cache/
+typechain-types/
+coverage/
+coverage.json
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS Files
+.DS_Store
+Thumbs.db
