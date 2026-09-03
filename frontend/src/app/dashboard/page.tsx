@@ -14,6 +14,7 @@ export default function Dashboard() {
   const { address } = useAccount();
   const router = useRouter();
   const [isMintModalOpen, setIsMintModalOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const [stats, setStats] = useState({ activeUsers: 0, executionRate: 0, networkHealth: 100 });
   const [latestLogs, setLatestLogs] = useState<any[]>([]);
 
@@ -37,7 +38,11 @@ export default function Dashboard() {
     fetchStats();
   }, []);
 
-  const did = address
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const did = isMounted && address
     ? `did:trustchain:${address.substring(0, 6)}...`
     : 'did:trustchain:7f82...';
 
