@@ -22,30 +22,53 @@ export function WalletConnectButton() {
       } else {
         // Authenticate with SIWE
         setIsAuthenticating(true);
-        // Normally we fetch a nonce from backend here
-        const nonce = "12345678"; 
         
-        const message = new SiweMessage({
-          domain: window.location.host,
-          address: address,
-          statement: 'Sign in to TrustChain with Ethereum.',
-          uri: window.location.origin,
-          version: '1',
-          chainId: 31337, // Hardhat local
-          nonce,
-        });
-
         try {
+          // 1. Fetch nonce from backend
+          const nonceRes = await fetch('http://localhost:3001/api/auth/nonce');
+          if (!nonceRes.ok) throw new Error('Failed to fetch nonce');
+          const { nonce } = await nonceRes.json();
+          
+          const message = new SiweMessage({
+            domain: window.location.host,
+            address: address,
+            statement: 'Sign in to BEL SecureChain with Ethereum.',
+            uri: window.location.origin,
+            version: '1',
+            chainId: 31337, // Hardhat local
+            nonce,
+          });
+
+          // 2. Prompt wallet signature
           const signature = await signMessageAsync({
             message: message.prepareMessage(),
           });
-          console.log("Authenticated! Signature:", signature);
-        } catch (signError) {
-          console.log("Signature bypassed for demo mode.");
+          
+          // 3. Verify on backend
+          const verifyRes = await fetch('http://localhost:3001/api/auth/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message, signature }),
+          });
+          
+          if (!verifyRes.ok) {
+             const errorData = await verifyRes.json();
+             throw new Error(errorData.error || 'Authentication failed');
+          }
+          
+          const { token, identity } = await verifyRes.json();
+          
+          // 4. Store token
+          localStorage.setItem('auth_token', token);
+          
+          console.log("Authenticated! Token saved.");
+          
+          // Redirect to dashboard
+          router.push('/dashboard');
+        } catch (error: any) {
+          console.error("Signature verification failed:", error);
+          alert(error.message || "Failed to authenticate with backend.");
         }
-        
-        // Redirect to dashboard without breaking React state
-        router.push('/dashboard');
       }
     } catch (error) {
       console.error("Auth failed:", error);

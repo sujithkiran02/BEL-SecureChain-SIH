@@ -4,10 +4,13 @@ import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from '../../config';
 import prisma from '../../db';
 
+const nonceStore = new Map<string, { expiresAt: number }>();
+
 export const getNonce = async (req: Request, res: Response) => {
   try {
     const nonce = generateNonce();
-    // In a real app, store nonce in session/cache with expiration
+    // Store nonce with 5 minutes expiration
+    nonceStore.set(nonce, { expiresAt: Date.now() + 5 * 60 * 1000 });
     res.json({ nonce });
   } catch (error) {
     res.status(500).json({ error: 'Failed to generate nonce' });
@@ -19,7 +22,19 @@ export const verifySignature = async (req: Request, res: Response) => {
     const { message, signature } = req.body;
     const siweMessage = new SiweMessage(message);
     
-    // Verify the signature
+    // 1. Verify nonce exists and hasn't expired
+    const storedNonce = nonceStore.get(siweMessage.nonce);
+    if (!storedNonce) {
+      return res.status(401).json({ error: 'Invalid or expired nonce' });
+    }
+    if (Date.now() > storedNonce.expiresAt) {
+      nonceStore.delete(siweMessage.nonce);
+      return res.status(401).json({ error: 'Nonce expired' });
+    }
+    // Delete nonce to prevent replay attacks
+    nonceStore.delete(siweMessage.nonce);
+
+    // 2. Verify the signature
     const { data } = await siweMessage.verify({ signature });
     
     const walletAddress = data.address.toLowerCase();
@@ -38,6 +53,8 @@ export const verifySignature = async (req: Request, res: Response) => {
           didDocumentHash: '',
         }
       });
+    } else if (identity.isRevoked) {
+      return res.status(403).json({ error: 'Identity has been revoked. Access denied.' });
     }
 
     // Generate JWT

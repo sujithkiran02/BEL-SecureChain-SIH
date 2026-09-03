@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -14,6 +14,28 @@ export default function Dashboard() {
   const { address } = useAccount();
   const router = useRouter();
   const [isMintModalOpen, setIsMintModalOpen] = useState(false);
+  const [stats, setStats] = useState({ activeUsers: 0, executionRate: 0, networkHealth: 100 });
+  const [latestLogs, setLatestLogs] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      const token = localStorage.getItem('auth_token');
+      if (!token) return;
+      try {
+        const res = await fetch('http://localhost:3001/api/dashboard/stats', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setStats(data.stats);
+          setLatestLogs(data.latestLogs);
+        }
+      } catch (err) {
+        console.error("Failed to fetch dashboard stats", err);
+      }
+    };
+    fetchStats();
+  }, []);
 
   const did = address
     ? `did:trustchain:${address.substring(0, 6)}...`
@@ -111,7 +133,7 @@ export default function Dashboard() {
                 <div className="flex justify-between text-xs mb-1">
                   <span className="text-muted-foreground">Active Users</span>
                 </div>
-                <div className="text-xl font-bold text-foreground">436</div>
+                <div className="text-xl font-bold text-foreground">{stats.activeUsers}</div>
                 <div className="w-full h-1.5 bg-muted rounded-full mt-2 overflow-hidden">
                   <div className="w-[85%] h-full bg-primary shadow-glow"></div>
                 </div>
@@ -126,9 +148,9 @@ export default function Dashboard() {
                 <div className="flex justify-between text-xs mb-1">
                   <span className="text-muted-foreground">Contract Execution</span>
                 </div>
-                <div className="text-xl font-bold text-foreground">29.5%</div>
+                <div className="text-xl font-bold text-foreground">{stats.executionRate}%</div>
                 <div className="w-full h-1.5 bg-muted rounded-full mt-2 overflow-hidden">
-                  <div className="w-[29%] h-full bg-accent shadow-[0_0_10px_rgba(56,189,248,0.5)]"></div>
+                  <div className="h-full bg-accent shadow-[0_0_10px_rgba(56,189,248,0.5)]" style={{ width: `${stats.executionRate}%` }}></div>
                 </div>
               </div>
             </div>
@@ -141,9 +163,9 @@ export default function Dashboard() {
                 <div className="flex justify-between text-xs mb-1">
                   <span className="text-muted-foreground">Network Health</span>
                 </div>
-                <div className="text-xl font-bold text-foreground">100%</div>
+                <div className="text-xl font-bold text-foreground">{stats.networkHealth}%</div>
                 <div className="w-full h-1.5 bg-muted rounded-full mt-2 overflow-hidden">
-                  <div className="w-full h-full bg-green-400 shadow-[0_0_10px_rgba(74,222,128,0.5)]"></div>
+                  <div className="h-full bg-green-400 shadow-[0_0_10px_rgba(74,222,128,0.5)]" style={{ width: `${stats.networkHealth}%` }}></div>
                 </div>
               </div>
             </div>
@@ -217,13 +239,16 @@ export default function Dashboard() {
             <MoreHorizontal className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
           </div>
           <div className="flex-1 overflow-y-auto pr-2 space-y-6 relative before:absolute before:inset-y-0 before:left-[7px] before:w-0.5 before:bg-primary/20">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="relative pl-6">
+            {latestLogs.map((log) => (
+              <div key={log.id} className="relative pl-6">
                 <div className="absolute left-0 top-1.5 w-4 h-4 rounded-full bg-primary border-4 border-background shadow-glow"></div>
-                <p className="text-sm font-semibold text-foreground">Action verified</p>
-                <p className="text-xs text-muted-foreground font-mono truncate mt-1">hash: d1cb37c7f22caada87ca0e7...</p>
+                <p className="text-sm font-semibold text-foreground">{log.actionType}</p>
+                <p className="text-xs text-muted-foreground font-mono truncate mt-1">tx: {log.id}</p>
               </div>
             ))}
+            {latestLogs.length === 0 && (
+              <div className="text-sm text-muted-foreground">No recent activity.</div>
+            )}
           </div>
         </AnimatedCard>
 

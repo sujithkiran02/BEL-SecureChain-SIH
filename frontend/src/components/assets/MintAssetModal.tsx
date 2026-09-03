@@ -44,12 +44,17 @@ export function MintAssetModal({ isOpen, onClose }: MintAssetModalProps) {
       formData.append('name', name);
       formData.append('classification', classification);
 
-      // Upload to IPFS (Mock)
-      const res = await axios.post('/api/assets/upload', formData);
-      const uri = res.data.uri;
+      // Upload to secure backend storage and generate SHA-256 hash
+      const token = localStorage.getItem('auth_token');
+      const res = await axios.post('http://localhost:3001/api/assets/upload', formData, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const uri = res.data.metadataHash;
       setIpfsUri(uri);
 
-      // Mint on-chain
+      // Mint on-chain using the secure hash
       mintAsset(address, uri);
       setIsSuccess(true);
     } catch (err: any) {

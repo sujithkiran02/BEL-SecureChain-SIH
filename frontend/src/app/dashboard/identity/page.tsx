@@ -4,10 +4,40 @@ import { useAccount } from 'wagmi';
 import { ShieldCheck, UserCircle, Key, FileText, CheckCircle2 } from 'lucide-react';
 import { AnimatedCard } from '@/components/ui/AnimatedCard';
 
+import { useState, useEffect } from 'react';
+
 export default function IdentityPage() {
   const { address } = useAccount();
   const demoAddress = address || '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266';
-  const did = `did:trustchain:${demoAddress.toLowerCase()}`;
+  const did = `did:bel:${demoAddress.toLowerCase()}`;
+  
+  const [identityData, setIdentityData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    const fetchIdentity = async () => {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+      try {
+        const res = await fetch('http://localhost:3001/api/identity/me', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setIdentityData(data.identity);
+        }
+      } catch (err) {
+        console.error("Failed to fetch identity:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchIdentity();
+  }, []);
 
   return (
     <div className="p-8 max-w-[1200px] mx-auto w-full flex flex-col gap-6">
@@ -28,11 +58,39 @@ export default function IdentityPage() {
               <UserCircle className="w-10 h-10 text-primary" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-foreground">Rahul</h2>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full font-bold border border-green-500/30 flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3" /> Verified Employee
-                </span>
+              <h2 className="text-xl font-bold text-foreground">My Identity</h2>
+              <div className="flex flex-wrap items-center gap-2 mt-1">
+                {loading ? (
+                  <span className="text-xs text-muted-foreground animate-pulse">Loading status...</span>
+                ) : identityData ? (
+                  <>
+                    {identityData.isVerified ? (
+                      <span className="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full font-bold border border-green-500/30 flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3" /> Verified
+                      </span>
+                    ) : (
+                      <span className="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded-full font-bold border border-yellow-500/30 flex items-center gap-1">
+                        Pending Verification
+                      </span>
+                    )}
+                    
+                    {identityData.isRevoked && (
+                      <span className="text-xs bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full font-bold border border-red-500/30 flex items-center gap-1">
+                        REVOKED
+                      </span>
+                    )}
+                    
+                    {identityData.roles?.map((r: any) => (
+                      <span key={r.role} className="text-xs bg-accent/20 text-accent px-2 py-0.5 rounded-full font-bold border border-accent/30 flex items-center gap-1">
+                        {r.role}
+                      </span>
+                    ))}
+                  </>
+                ) : (
+                  <span className="text-xs bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full font-bold border border-red-500/30">
+                    Not Registered
+                  </span>
+                )}
               </div>
             </div>
           </div>

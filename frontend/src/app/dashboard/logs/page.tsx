@@ -20,16 +20,37 @@ export default function AuditLogsPage() {
   const [filter, setFilter] = React.useState('ALL');
 
   React.useEffect(() => {
-    fetch('/api/logs')
-      .then(res => res.json())
-      .then(data => {
-        setLogs(data);
+    const fetchLogs = async () => {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
         setIsLoading(false);
-      })
-      .catch(err => {
+        return;
+      }
+      try {
+        const res = await fetch('http://localhost:3001/api/audit/timeline', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          // Transform backend format to UI format
+          const formattedLogs = data.entries.map((entry: any) => ({
+            id: entry.id.toString(),
+            action: entry.actionType,
+            subject: entry.actorWallet,
+            resource: entry.relatedAssetId ? `Asset #${entry.relatedAssetId}` : (entry.relatedUser || 'System'),
+            timestamp: entry.timestamp,
+            status: 'SUCCESS' // Assuming success if it was logged
+          }));
+          setLogs(formattedLogs);
+        }
+      } catch (err) {
         console.error("Failed to fetch logs", err);
+      } finally {
         setIsLoading(false);
-      });
+      }
+    };
+    
+    fetchLogs();
   }, []);
 
   const filteredLogs = filter === 'ALL' ? logs : logs.filter(log => log.status === filter);
