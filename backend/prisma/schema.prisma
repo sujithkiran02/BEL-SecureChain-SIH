@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Identity {
+  walletAddress   String   @id
+  did             String   @unique
+  didDocumentHash String
+  isVerified      Boolean  @default(false)
+  isRevoked       Boolean  @default(false)
+  registeredAt    DateTime @default(now())
+
+  roles  Role[]
+  assets Asset[]
+  audits AuditEntry[] @relation("ActorAudits")
+}
+
+model Role {
+  id              Int      @id @default(autoincrement())
+  role            String   // e.g. ADMIN_ROLE
+  identityWallet  String
+  identity        Identity @relation(fields: [identityWallet], references: [walletAddress])
+
+  @@unique([role, identityWallet])
+}
+
+model Asset {
+  tokenId         Int      @id
+  metadataHash    String
+  mintedAt        DateTime @default(now())
+  isRevoked       Boolean  @default(false)
+  ownerWallet     String
+  owner           Identity @relation(fields: [ownerWallet], references: [walletAddress])
+}
+
+model AuditEntry {
+  id              Int      @id
+  actionType      String
+  actorWallet     String
+  actor           Identity @relation("ActorAudits", fields: [actorWallet], references: [walletAddress])
+  relatedUser     String?
+  relatedAssetId  Int?
+  details         String
+  timestamp       DateTime
+  blockNumber     Int
+}
