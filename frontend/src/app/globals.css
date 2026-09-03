@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light Mode */
+    --background: #FFFFFF;
+    --foreground: #0F172A;
+    --primary: #0284C7;
+    --primary-foreground: #FFFFFF;
+    --destructive: #EF4444;
+    --destructive-foreground: #FFFFFF;
+    --muted: #F1F5F9;
+    --muted-foreground: #64748B;
+    --accent: #38BDF8;
+    --accent-foreground: #0F172A;
+    --card: rgba(255, 255, 255, 0.7);
+    --card-foreground: #0F172A;
+  }
+
+  .dark {
+    /* Dark Mode - Deep Teal Aesthetic */
+    --background: #091219;
+    --foreground: #E2E8F0;
+    --primary: #00F0FF;
+    --primary-foreground: #091219;
+    --destructive: #FF0055;
+    --destructive-foreground: #FFFFFF;
+    --muted: #132433;
+    --muted-foreground: #94A3B8;
+    --accent: #38BDF8;
+    --accent-foreground: #091219;
+    --card: rgba(16, 30, 43, 0.7);
+    --card-foreground: #F8FAFC;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-feature-settings: "rlig" 1, "calt" 1;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+}
+
+@layer utilities {
+  .glass-panel {
+    @apply bg-card backdrop-blur-xl border border-muted shadow-lg rounded-xl;
+  }
+
+  .glass-panel-hover {
+    @apply glass-panel transition-all duration-300 hover:border-primary hover:shadow-glow hover:-translate-y-1;
+  }
+
+  .text-glow {
+    text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+  }
+
+  .dark .text-glow {
+    text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+  }
+}
