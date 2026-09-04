@@ -13,6 +13,7 @@ model Identity {
   didDocumentHash String
   isVerified      Boolean  @default(false)
   isRevoked       Boolean  @default(false)
+  isQuarantined   Boolean  @default(false)
   registeredAt    DateTime @default(now())
 
   roles  Role[]
@@ -32,6 +33,7 @@ model Role {
 model Asset {
   tokenId         Int      @id
   metadataHash    String
+  ipfsCid         String?
   mintedAt        DateTime @default(now())
   isRevoked       Boolean  @default(false)
   ownerWallet     String
@@ -48,4 +50,40 @@ model AuditEntry {
   details         String
   timestamp       DateTime
   blockNumber     Int
+}
+
+model SecurityAlert {
+  id           Int      @id @default(autoincrement())
+  severity     String   // CRITICAL, HIGH, MEDIUM, LOW
+  tactic       String   // Privilege Escalation, Mass Exfiltration, Off-Hours Burst, Unauthorized Probing
+  description  String
+  targetWallet String?
+  threatScore  Int
+  status       String   @default("ACTIVE") // ACTIVE, RESOLVED, QUARANTINED
+  createdAt    DateTime @default(now())
+}
+
+model Proposal {
+  id                 String              @id @default(uuid())
+  title              String
+  actionType         String              // MINT_CLASSIFIED, REVOKE_ASSET, GRANT_CLEARANCE, EMERGENCY_LOCK
+  description        String
+  targetResource     String?
+  requiredSignatures Int                 @default(2)
+  status             String              @default("PENDING") // PENDING, APPROVED, EXECUTED, REJECTED
+  creatorWallet      String
+  createdAt          DateTime            @default(now())
+  signatures         ProposalSignature[]
+}
+
+model ProposalSignature {
+  id            Int      @id @default(autoincrement())
+  proposalId    String
+  proposal      Proposal @relation(fields: [proposalId], references: [id])
+  officerWallet String
+  officerRole   String
+  signature     String
+  signedAt      DateTime @default(now())
+
+  @@unique([proposalId, officerWallet])
 }

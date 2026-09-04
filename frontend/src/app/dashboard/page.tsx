@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { CheckSquare, MoreHorizontal, User, Network as NetworkIcon, Zap, Activity, Plus } from 'lucide-react';
+import { CheckSquare, MoreHorizontal, User, Network as NetworkIcon, Zap, Activity, Plus, ShieldAlert, Users, CheckCircle2 } from 'lucide-react';
+import Link from 'next/link';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { AnimatedCard } from '@/components/ui/AnimatedCard';
 import { MintAssetModal } from '@/components/assets/MintAssetModal';
 import { useTrustChain } from '@/hooks/useTrustChain';
@@ -51,15 +53,47 @@ export default function Dashboard() {
   return (
     <div className="p-8 max-w-[1600px] mx-auto w-full flex flex-col gap-6">
 
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-        <button
-          onClick={() => setIsMintModalOpen(true)}
-          className="flex items-center gap-2 bg-primary/20 text-primary border border-primary/50 px-5 py-2 rounded-lg font-bold transition-all hover:bg-primary hover:text-background hover:shadow-glow hover:-translate-y-0.5"
-        >
-          <Plus className="w-4 h-4" />
-          Mint Asset (Admin)
-        </button>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-extrabold text-foreground tracking-tight">
+            BEL Command <span className="text-primary">Dashboard</span>
+          </h1>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Decentralized Zero-Trust Identity &amp; Digital Asset Control
+          </p>
+        </div>
+
+        <div className="flex items-center flex-wrap gap-2.5">
+          <Link
+            href="/soc"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-red-500/10 text-red-400 border border-red-500/30 font-bold text-xs hover:bg-red-500 hover:text-white transition-all shadow-sm"
+          >
+            <ShieldAlert className="w-3.5 h-3.5 text-red-400" />
+            SOC Radar
+          </Link>
+          <Link
+            href="/governance"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-accent/10 text-accent border border-accent/30 font-bold text-xs hover:bg-accent hover:text-background transition-all"
+          >
+            <Users className="w-3.5 h-3.5" />
+            Quorum Multi-Sig
+          </Link>
+          <Link
+            href="/verify"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold text-xs hover:bg-emerald-500 hover:text-white transition-all"
+          >
+            <CheckCircle2 className="w-3.5 h-3.5" />
+            Verify Asset
+          </Link>
+          <button
+            onClick={() => setIsMintModalOpen(true)}
+            className="flex items-center gap-2 bg-primary text-background px-4 py-2 rounded-lg font-bold text-xs transition-all hover:shadow-glow hover:-translate-y-0.5"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Mint Asset
+          </button>
+          <ThemeToggle />
+        </div>
       </div>
 
       {/* Top Grid: 3 Panels */}

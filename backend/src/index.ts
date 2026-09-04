@@ -8,6 +8,8 @@ import { getAllIdentities, getIdentity } from './modules/identity/identity.contr
 import { uploadAsset, downloadAsset } from './modules/assets/asset.controller';
 import { getDashboardStats } from './modules/dashboard/dashboard.controller';
 import { verifyAsset } from './modules/verification/verify.controller';
+import { socRouter } from './modules/soc/soc.controller';
+import { quorumRouter } from './modules/quorum/quorum.controller';
 import prisma from './db';
 import multer from 'multer';
 
@@ -21,6 +23,12 @@ app.use(express.json());
 // Auth routes
 app.get('/api/auth/nonce', getNonce);
 app.post('/api/auth/verify', verifySignature);
+
+// SOC Defense & Threat Detection
+app.use('/api/soc', socRouter);
+
+// Multi-Party Quorum Governance
+app.use('/api/quorum', quorumRouter);
 
 // Audit route
 app.get('/api/audit/timeline', requireAuth, async (req, res) => {

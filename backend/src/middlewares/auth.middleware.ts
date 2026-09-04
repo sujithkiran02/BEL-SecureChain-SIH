@@ -28,6 +28,10 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
       return res.status(403).json({ error: 'Identity has been revoked' });
     }
 
+    if ((identity as any).isQuarantined) {
+      return res.status(403).json({ error: 'Identity placed under SOC Emergency Quarantine (DEFCON Circuit Breaker)' });
+    }
+
     (req as any).user = {
       ...decoded,
       roles: identity.roles.map((r: any) => r.role)

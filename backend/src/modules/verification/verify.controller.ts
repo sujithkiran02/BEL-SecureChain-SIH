@@ -3,7 +3,7 @@ import prisma from '../../db';
 
 export const verifyAsset = async (req: Request, res: Response) => {
   try {
-    const { hash } = req.params;
+    const hash = req.params.hash as string;
     
     // Find asset by its metadataHash (SHA-256)
     const asset = await prisma.asset.findFirst({
@@ -47,7 +47,7 @@ export const verifyAsset = async (req: Request, res: Response) => {
         tokenId: asset.tokenId,
         ownerWallet: asset.ownerWallet,
         isOwnerVerified: ownerIdentity.isVerified,
-        mintedAt: asset.createdAt // Assuming Prisma handles createdAt
+        mintedAt: asset.mintedAt
       }
     });
 
