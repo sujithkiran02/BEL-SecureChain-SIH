@@ -2,7 +2,7 @@
 
 import { useAccount, useConnect, useDisconnect, useSignMessage } from 'wagmi';
 import { SiweMessage } from 'siwe';
-import { ShieldAlert, ShieldCheck, Loader2, LogOut, KeyRound } from 'lucide-react';
+import { ShieldCheck, Loader2, LogOut, KeyRound, Wallet } from 'lucide-react';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
@@ -70,7 +70,6 @@ export function WalletConnectButton() {
           console.error("Signature verification failed:", error);
           toast.error(error.message || "Failed to authenticate with backend.", { id: 'siwe-auth' });
           
-          // Fallback option for demo mode: allow proceeding with active wallet if needed
           if (error.message?.includes('Failed to fetch') || error.message?.includes('port 3001')) {
             toast.info("Ensure the backend service is running on http://localhost:3001");
           }
@@ -86,15 +85,15 @@ export function WalletConnectButton() {
 
   if (isConnected) {
     return (
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-2 px-4 py-2 rounded-xl glass-panel border border-primary/40 shadow-glow text-primary text-xs font-mono font-bold">
-          <ShieldCheck className="w-4 h-4 text-emerald-400" />
+      <div className="flex flex-wrap items-center gap-2.5">
+        <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-muted bg-card text-foreground text-xs font-mono font-medium shadow-sm">
+          <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
           <span>{address?.slice(0, 6)}...{address?.slice(-4)}</span>
         </div>
         <button 
           onClick={handleConnect}
           disabled={isAuthenticating}
-          className="px-5 py-2.5 rounded-xl bg-primary text-background font-mono font-bold text-xs hover:shadow-glow transition-all flex items-center gap-2"
+          className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-medium text-xs hover:bg-primary/90 transition-all flex items-center gap-2 shadow-sm"
         >
           {isAuthenticating ? <Loader2 className="w-4 h-4 animate-spin" /> : <KeyRound className="w-4 h-4" />}
           {isAuthenticating ? "Authenticating..." : "Authenticate Identity (SIWE)"}
@@ -104,7 +103,7 @@ export function WalletConnectButton() {
             disconnect();
             toast.info('Wallet disconnected');
           }} 
-          className="p-2 rounded-xl border border-muted hover:border-red-500/40 text-muted-foreground hover:text-red-400 transition-colors text-xs"
+          className="p-2.5 rounded-xl border border-muted hover:border-red-500/40 text-muted-foreground hover:text-red-500 transition-colors text-xs bg-card"
           title="Disconnect Wallet"
         >
           <LogOut className="w-4 h-4" />
@@ -127,16 +126,16 @@ export function WalletConnectButton() {
 
   return (
     <motion.button
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
+      whileHover={{ scale: 1.01 }}
+      whileTap={{ scale: 0.99 }}
       onClick={handleInitialConnect}
       disabled={isPending}
-      className="px-8 py-3.5 rounded-xl bg-gradient-to-r from-primary to-accent text-background font-mono font-bold text-sm flex items-center gap-2.5 shadow-[0_0_25px_rgba(0,240,255,0.4)] hover:shadow-[0_0_40px_rgba(0,240,255,0.6)] transition-all"
+      className="px-6 py-3 rounded-xl bg-primary text-primary-foreground font-medium text-sm flex items-center gap-2.5 shadow-sm hover:bg-primary/90 transition-all"
     >
       {isPending ? (
         <Loader2 className="w-4 h-4 animate-spin" />
       ) : (
-        <ShieldAlert className="w-5 h-5" />
+        <Wallet className="w-4 h-4" />
       )}
       Connect Secure Wallet
     </motion.button>

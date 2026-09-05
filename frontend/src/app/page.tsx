@@ -2,214 +2,149 @@
 
 import { motion } from 'framer-motion';
 import { 
-  Shield, 
-  Lock, 
-  FileDigit, 
-  Activity, 
-  Radio, 
+  ShieldCheck, 
+  FolderLock, 
   Users, 
   CheckCircle2, 
   ArrowRight, 
-  Terminal, 
-  KeyRound, 
-  Cpu,
-  Layers
+  Radio,
+  Lock,
+  FileText
 } from 'lucide-react';
 import Link from 'next/link';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { WalletConnectButton } from '@/components/auth/WalletConnectButton';
 
 export default function Home() {
-  const capabilities = [
+  const pillars = [
     {
-      icon: <Shield className="w-6 h-6 text-primary" />,
-      title: 'Zero-Trust Architecture',
-      desc: 'Default-deny verification on every identity, request, and state transition.',
-      badge: 'NIST 800-207'
+      icon: <ShieldCheck className="w-5 h-5 text-primary" />,
+      title: 'Decentralized Identity (DID)',
+      description: 'W3C-compliant cryptographic identifiers. Eliminates passwords with Sign-In with Ethereum (SIWE) and Zero-Knowledge verification.',
+      route: '/dashboard/identity'
     },
     {
-      icon: <Lock className="w-6 h-6 text-accent" />,
-      title: 'Decentralized Identifiers (DID)',
-      desc: 'W3C compliant cryptographic identities replacing vulnerable static credentials.',
-      badge: 'W3C DID'
+      icon: <FolderLock className="w-5 h-5 text-primary" />,
+      title: 'Confidential Asset Vault',
+      description: 'Tokenized defense blueprints anchored to EVM smart contracts with AES-256 encrypted IPFS decentralized storage.',
+      route: '/dashboard/assets'
     },
     {
-      icon: <Radio className="w-6 h-6 text-red-400" />,
-      title: 'Defense SOC Threat Radar',
-      desc: 'Real-time MITRE ATT&CK heuristic anomaly monitoring and circuit breaker containment.',
-      badge: 'MITRE ATT&CK'
-    },
-    {
-      icon: <Users className="w-6 h-6 text-emerald-400" />,
+      icon: <Users className="w-5 h-5 text-primary" />,
       title: 'Quorum Multi-Sig Governance',
-      desc: 'M-of-N threshold cryptographic consensus for classified defense operations.',
-      badge: 'M-of-N Multi-Sig'
-    },
-    {
-      icon: <FileDigit className="w-6 h-6 text-purple-400" />,
-      title: 'NFT Asset Provenance Vault',
-      desc: 'Encrypted IPFS-bound tactical assets with tamper-proof blockchain lineage.',
-      badge: 'ERC-721 / IPFS'
-    },
-    {
-      icon: <Activity className="w-6 h-6 text-cyan-400" />,
-      title: 'Immutable Audit Trail',
-      desc: 'Every state change cryptographically anchored to EVM smart contracts.',
-      badge: 'EVM Enforced'
-    },
-  ];
-
-  const telemetryMetrics = [
-    { label: 'Security Posture', value: 'DEFCON 5', color: 'text-emerald-400' },
-    { label: 'Consensus Latency', value: '< 1.2s', color: 'text-primary' },
-    { label: 'Asset Protection', value: 'AES-256-GCM', color: 'text-accent' },
-    { label: 'Threat Mitigation', value: 'Automated Lock', color: 'text-red-400' },
+      description: 'M-of-N cryptographic threshold consensus across authorized defense officers to eliminate unilateral administrative risks.',
+      route: '/governance'
+    }
   ];
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-background text-foreground relative overflow-hidden cyber-grid">
-      {/* Dynamic Background Cyber Grid & Radar Rings */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Sweep Beam */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/80 to-transparent animate-scanline opacity-75" />
-        {/* Ambient Glows */}
-        <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-primary/10 rounded-full blur-[140px]" />
-        <div className="absolute bottom-[-10%] right-[-5%] w-[600px] h-[600px] bg-accent/10 rounded-full blur-[160px]" />
-      </div>
-
-      {/* Top Navigation Bar */}
-      <header className="relative z-30 max-w-7xl w-full mx-auto px-6 py-6 flex items-center justify-between">
+    <div className="min-h-screen bg-background text-foreground flex flex-col justify-between selection:bg-primary/20 selection:text-primary">
+      {/* Top Clean Navigation */}
+      <header className="max-w-6xl w-full mx-auto px-6 py-6 flex items-center justify-between border-b border-muted/60 dark:border-white/5">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary/15 border border-primary/40 flex items-center justify-center shadow-[0_0_20px_rgba(0,240,255,0.3)]">
-            <Radio className="w-5 h-5 text-primary animate-pulse" />
+          <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+            <Radio className="w-4 h-4 text-primary" />
           </div>
           <div>
-            <span className="font-heading font-black text-xl tracking-wider text-foreground">
-              BEL <span className="text-primary text-glow">SECURECHAIN</span>
+            <span className="font-heading font-bold text-base tracking-tight text-foreground">
+              BEL <span className="text-primary">SECURECHAIN</span>
             </span>
-            <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
+            <div className="text-[10px] text-muted-foreground uppercase tracking-wider font-mono">
               Bharat Electronics Limited
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <Link
             href="/verify"
-            className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-primary/20 bg-primary/5 text-primary text-xs font-mono font-semibold hover:bg-primary/15 transition-all"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-muted hover:border-primary/40 bg-card text-xs font-medium text-foreground transition-all"
           >
-            <CheckCircle2 className="w-3.5 h-3.5" />
+            <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
             Verify Asset
           </Link>
           <ThemeToggle />
         </div>
       </header>
 
-      {/* Hero Section */}
-      <main className="relative z-20 flex-1 max-w-7xl w-full mx-auto px-6 pt-10 pb-20 flex flex-col items-center justify-center">
-        {/* Status Chip */}
+      {/* Main Hero Section */}
+      <main className="max-w-4xl w-full mx-auto px-6 py-16 sm:py-24 flex flex-col items-center text-center">
+        {/* Subtle pill */}
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-primary/40 bg-primary/10 backdrop-blur-md text-primary text-xs font-mono font-bold tracking-wider mb-8 shadow-[0_0_20px_rgba(0,240,255,0.2)]"
+          transition={{ duration: 0.4 }}
+          className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-primary/20 bg-primary/5 text-primary text-xs font-mono font-medium tracking-wide mb-6"
         >
-          <span className="relative flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span>
-          </span>
-          DEFENSE-GRADE ZERO TRUST PLATFORM • ACTIVE
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          DEFENSE ZERO-TRUST PROTOCOL • ACTIVE
         </motion.div>
 
-        {/* Big Headline */}
+        {/* Clean, Bold Headline */}
         <motion.h1
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="text-4xl sm:text-6xl md:text-7xl font-extrabold text-center tracking-tight max-w-5xl leading-tight sm:leading-none"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="text-4xl sm:text-5xl md:text-6xl font-heading font-extrabold text-foreground tracking-tight leading-[1.12]"
         >
-          Securing India&apos;s Defense Assets with{' '}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-emerald-400 text-glow">
-            Immutable Blockchain Trust
-          </span>
+          Zero-Trust Security for <br className="hidden sm:inline" />
+          <span className="text-primary">National Defense Assets</span>
         </motion.h1>
 
-        {/* Subtitle */}
+        {/* Crisp Subtitle */}
         <motion.p
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="text-base sm:text-xl text-muted-foreground text-center max-w-3xl mt-6 leading-relaxed"
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="text-base sm:text-lg text-muted-foreground max-w-2xl mt-5 leading-relaxed"
         >
-          Decentralized Identifiers (DID), Role-Based Access Enforcement, IPFS NFT Provenance, MITRE ATT&amp;CK Threat SOC, and Multi-Party Quorum Governance engineered for defense operations.
+          Cryptographic Decentralized Identifiers (DID), smart contract enforced role permissions, IPFS NFT provenance, and multi-party quorum governance.
         </motion.p>
 
-        {/* Telemetry Bar */}
+        {/* Action Button Strip */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-3xl mt-10 p-4 rounded-2xl bg-card/60 backdrop-blur-xl border border-primary/20 shadow-xl"
-        >
-          {telemetryMetrics.map((m, i) => (
-            <div key={i} className="text-center p-2">
-              <div className={`text-lg sm:text-xl font-mono font-black ${m.color}`}>{m.value}</div>
-              <div className="text-[11px] text-muted-foreground font-mono mt-0.5">{m.label}</div>
-            </div>
-          ))}
-        </motion.div>
-
-        {/* Wallet Connection & Action CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="flex flex-col sm:flex-row items-center gap-4 mt-10"
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="mt-8 flex flex-col sm:flex-row items-center gap-3.5"
         >
           <WalletConnectButton />
           
           <Link
             href="/verify"
-            className="flex items-center gap-2 px-6 py-3 rounded-xl border border-primary/30 bg-primary/5 hover:bg-primary/15 text-primary text-sm font-bold font-mono transition-all"
+            className="flex items-center gap-2 px-6 py-3 rounded-xl border border-muted hover:border-primary/40 bg-card text-foreground text-sm font-medium hover:bg-muted/40 transition-all"
           >
-            <CheckCircle2 className="w-4 h-4" />
-            Public Verification Portal
-            <ArrowRight className="w-4 h-4" />
+            Public Asset Verification
+            <ArrowRight className="w-4 h-4 text-muted-foreground" />
           </Link>
         </motion.div>
 
-        {/* Capabilities Bento Grid */}
+        {/* 3 Minimal Pillars */}
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.5 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full mt-20"
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-5 w-full mt-16 text-left"
         >
-          {capabilities.map((cap, i) => (
+          {pillars.map((pillar, i) => (
             <div
               key={i}
-              className="p-6 rounded-2xl bg-card/60 backdrop-blur-xl border border-primary/20 hover:border-primary/50 transition-all duration-300 flex flex-col justify-between group hover:shadow-[0_0_30px_rgba(0,240,255,0.15)] hover:-translate-y-1"
+              className="p-6 rounded-2xl bg-card border border-muted/80 dark:border-white/10 hover:border-primary/40 transition-all duration-200 flex flex-col justify-between group shadow-sm hover:shadow-md"
             >
               <div>
-                <div className="flex justify-between items-center mb-4">
-                  <div className="p-3 rounded-xl bg-primary/10 border border-primary/25 group-hover:scale-110 transition-transform">
-                    {cap.icon}
-                  </div>
-                  <span className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-full border border-primary/20 bg-primary/5 text-primary">
-                    {cap.badge}
-                  </span>
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-4 text-primary">
+                  {pillar.icon}
                 </div>
-
-                <h3 className="text-lg font-bold font-heading text-foreground group-hover:text-primary transition-colors">
-                  {cap.title}
+                <h3 className="text-sm font-bold font-heading text-foreground mb-1.5">
+                  {pillar.title}
                 </h3>
-                <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                  {cap.desc}
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  {pillar.description}
                 </p>
               </div>
 
-              <div className="mt-6 pt-4 border-t border-primary/10 flex items-center justify-between text-xs text-muted-foreground">
-                <span className="font-mono text-[11px] group-hover:text-primary transition-colors">Learn more</span>
+              <div className="mt-5 pt-3 border-t border-muted/50 dark:border-white/5 flex items-center justify-between text-xs text-primary font-medium">
+                <span>Explore</span>
                 <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
               </div>
             </div>
@@ -217,9 +152,10 @@ export default function Home() {
         </motion.div>
       </main>
 
-      {/* Footer Banner */}
-      <footer className="border-t border-primary/15 bg-card/40 backdrop-blur-md py-6 px-8 text-center text-xs font-mono text-muted-foreground">
-        Bharat Electronics Limited (BEL) • Defense Cyber Security Division • SIH 2026 Initiative
+      {/* Classic Minimal Footer */}
+      <footer className="max-w-6xl w-full mx-auto px-6 py-6 border-t border-muted/60 dark:border-white/5 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
+        <div>Bharat Electronics Limited (BEL) • Defense Cyber Security</div>
+        <div className="font-mono text-[11px]">Sepolia EVM Protocol v2.4</div>
       </footer>
     </div>
   );
