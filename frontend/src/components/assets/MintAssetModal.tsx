@@ -15,13 +15,11 @@ interface MintAssetModalProps {
 export function MintAssetModal({ isOpen, onClose }: MintAssetModalProps) {
   const { address } = useAccount();
   const { mintAsset, isMintPending: isPending } = useTrustChain();
-  // We use the toast notifications from useTrustChain for success states, 
-  // but we can track local success via IPFS uri check for now
   const [isSuccess, setIsSuccess] = React.useState(false);
   const [error, setError] = React.useState<any>(null);
   const [file, setFile] = React.useState<File | null>(null);
   const [name, setName] = React.useState('');
-  const [classification, setClassification] = React.useState('Confidential');
+  const [classification, setClassification] = React.useState('TOP_SECRET');
   const [uploading, setUploading] = React.useState(false);
   const [ipfsUri, setIpfsUri] = React.useState<string | null>(null);
 
@@ -67,7 +65,6 @@ export function MintAssetModal({ isOpen, onClose }: MintAssetModalProps) {
 
   React.useEffect(() => {
     if (isSuccess) {
-      // Reset form after 2 seconds on success
       const t = setTimeout(() => {
         onClose();
         setFile(null);
@@ -81,73 +78,70 @@ export function MintAssetModal({ isOpen, onClose }: MintAssetModalProps) {
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-background/80 backdrop-blur-sm">
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="absolute inset-0 bg-background/80 backdrop-blur-sm"
-          />
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="relative w-full max-w-md max-h-[90vh] overflow-y-auto glass-panel p-6 border-primary/20 shadow-[0_0_40px_rgba(0,240,255,0.1)] rounded-xl scrollbar-thin scrollbar-thumb-primary/20"
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.96 }}
+            className="relative w-full max-w-md max-h-[90dvh] overflow-y-auto bg-card border border-muted/80 dark:border-white/10 p-5 sm:p-6 shadow-2xl rounded-2xl flex flex-col gap-4"
           >
-            <button onClick={onClose} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground">
-              <X className="w-5 h-5" />
-            </button>
-            
-            <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
-              <span className="text-primary text-glow">Mint Digital Asset</span>
-            </h2>
+            <div className="flex justify-between items-center border-b border-muted/60 dark:border-white/5 pb-3">
+              <h2 className="text-base sm:text-lg font-bold font-heading text-foreground">
+                Mint Confidential Asset (NFT)
+              </h2>
+              <button 
+                onClick={onClose} 
+                className="p-1 rounded-lg text-muted-foreground hover:text-foreground"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
             {isSuccess ? (
-              <div className="flex flex-col items-center justify-center py-10 text-center">
+              <div className="flex flex-col items-center justify-center py-8 text-center">
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ type: 'spring', bounce: 0.5 }}
                 >
-                  <CheckCircle2 className="w-16 h-16 text-primary mb-4" />
+                  <CheckCircle2 className="w-12 h-12 text-emerald-500 mb-3" />
                 </motion.div>
-                <h3 className="text-xl font-bold text-foreground">Asset Secured!</h3>
-                <p className="text-muted-foreground mt-2 break-all text-sm">URI: {ipfsUri}</p>
+                <h3 className="text-base font-bold text-foreground">Asset Secured on Chain!</h3>
+                <p className="text-muted-foreground mt-1 break-all text-xs font-mono">URI: {ipfsUri}</p>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
                 <div>
-                  <label className="block text-sm font-medium text-muted-foreground mb-1">Asset Name</label>
+                  <label className="text-xs font-mono text-muted-foreground uppercase">Asset Name</label>
                   <input 
                     required
                     value={name}
                     onChange={e => setName(e.target.value)}
                     type="text" 
-                    className="w-full bg-background/50 border border-muted rounded-md px-4 py-2 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
-                    placeholder="e.g. Project Apollo Schematic"
+                    className="w-full mt-1 bg-muted/30 dark:bg-white/5 border border-muted rounded-xl px-3 py-2 text-xs font-mono text-foreground focus:outline-none focus:border-primary"
+                    placeholder="e.g. Swathi Radar Phase-III Blueprint"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-muted-foreground mb-1">Classification Level</label>
+                  <label className="text-xs font-mono text-muted-foreground uppercase">Classification Level</label>
                   <select 
                     value={classification}
                     onChange={e => setClassification(e.target.value)}
-                    className="w-full bg-background/50 border border-muted rounded-md px-4 py-2 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all appearance-none"
+                    className="w-full mt-1 bg-muted/30 dark:bg-white/5 border border-muted rounded-xl px-3 py-2 text-xs font-mono text-foreground focus:outline-none focus:border-primary"
                   >
-                    <option value="Confidential">Confidential</option>
-                    <option value="Secret">Secret</option>
-                    <option value="Top Secret">Top Secret</option>
+                    <option value="TOP_SECRET">TOP_SECRET</option>
+                    <option value="SECRET">SECRET</option>
+                    <option value="RESTRICTED">RESTRICTED</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-muted-foreground mb-1">Secure Document</label>
+                  <label className="text-xs font-mono text-muted-foreground uppercase">Confidential Payload</label>
                   <div 
                     onDragOver={e => e.preventDefault()}
                     onDrop={handleDrop}
-                    className={`border-2 border-dashed rounded-lg p-8 text-center transition-all ${file ? 'border-primary bg-primary/5' : 'border-muted hover:border-primary/50 bg-background/20'}`}
+                    className={`border-2 border-dashed rounded-xl p-5 text-center mt-1 transition-all ${file ? 'border-primary bg-primary/5' : 'border-muted hover:border-primary/50 bg-muted/20'}`}
                   >
                     <input 
                       type="file" 
@@ -156,30 +150,40 @@ export function MintAssetModal({ isOpen, onClose }: MintAssetModalProps) {
                       onChange={e => setFile(e.target.files?.[0] || null)}
                     />
                     <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center">
-                      <UploadCloud className={`w-10 h-10 mb-2 ${file ? 'text-primary' : 'text-muted-foreground'}`} />
-                      <span className="text-sm font-medium text-foreground">
-                        {file ? file.name : 'Click or Drag & Drop'}
+                      <UploadCloud className={`w-8 h-8 mb-1.5 ${file ? 'text-primary' : 'text-muted-foreground'}`} />
+                      <span className="text-xs font-medium text-foreground truncate max-w-full">
+                        {file ? file.name : 'Click to select or drag document'}
                       </span>
-                      <span className="text-xs text-muted-foreground mt-1">PDF, DOCX, ZIP up to 50MB</span>
+                      <span className="text-[10px] text-muted-foreground mt-0.5 font-mono">PDF, CAD, ZIP (Encrypted on upload)</span>
                     </label>
                   </div>
                 </div>
 
-                {error && <p className="text-destructive text-sm">{error.message}</p>}
+                {error && <p className="text-red-500 text-xs font-mono">{error.message}</p>}
 
-                <button
-                  type="submit"
-                  disabled={!file || !name || uploading || isPending}
-                  className="w-full relative overflow-hidden group bg-primary/10 border border-primary/50 text-primary font-bold py-3 px-6 rounded-md transition-all hover:bg-primary/20 hover:shadow-glow disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <span className="relative z-10 flex items-center justify-center gap-2">
+                <div className="flex justify-end gap-2 pt-2 border-t border-muted/60 dark:border-white/5">
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="px-3.5 py-2 rounded-xl border border-muted text-muted-foreground text-xs font-mono font-medium hover:bg-muted/40"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={!file || !name || uploading || isPending}
+                    className="px-4 py-2 rounded-xl bg-primary text-primary-foreground font-mono font-medium text-xs hover:bg-primary/90 shadow-sm disabled:opacity-50"
+                  >
                     {uploading || isPending ? (
-                      <><Loader2 className="w-5 h-5 animate-spin" /> {uploading ? 'Encrypting & Pinning...' : 'Confirming on Chain...'}</>
+                      <span className="flex items-center gap-1.5">
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        {uploading ? 'Encrypting & Pinning...' : 'Confirming on Chain...'}
+                      </span>
                     ) : (
                       'Mint Tokenized Asset'
                     )}
-                  </span>
-                </button>
+                  </button>
+                </div>
               </form>
             )}
           </motion.div>

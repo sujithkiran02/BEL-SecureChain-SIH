@@ -21,7 +21,7 @@ export default function RBACPage() {
         "Override Circuit Breakers",
         "Authorize Top-Secret Assets"
       ],
-      color: "text-primary border-primary/40 bg-primary/10 shadow-[0_0_15px_rgba(0,240,255,0.2)]",
+      color: "text-primary border-primary/30 bg-primary/10",
       badge: "ROOT_AUTHORITY"
     },
     {
@@ -34,7 +34,7 @@ export default function RBACPage() {
         "Issue Clearance Verifications",
         "Manage Division Nodes"
       ],
-      color: "text-accent border-accent/40 bg-accent/10 shadow-[0_0_15px_rgba(56,189,248,0.2)]",
+      color: "text-primary border-primary/30 bg-primary/10",
       badge: "COMMANDER"
     },
     {
@@ -47,7 +47,7 @@ export default function RBACPage() {
         "Audit Zero-Knowledge Credentials",
         "Export Cryptographic Attestations"
       ],
-      color: "text-purple-400 border-purple-500/40 bg-purple-500/10 shadow-[0_0_15px_rgba(168,85,247,0.2)]",
+      color: "text-purple-500 border-purple-500/30 bg-purple-500/10",
       badge: "AUDIT_CLEARANCE"
     },
     {
@@ -60,7 +60,7 @@ export default function RBACPage() {
         "Submit Verification Hashes",
         "View Own Identity Record"
       ],
-      color: "text-emerald-400 border-emerald-500/40 bg-emerald-500/10 shadow-[0_0_15px_rgba(52,211,153,0.2)]",
+      color: "text-emerald-500 border-emerald-500/30 bg-emerald-500/10",
       badge: "OPERATOR"
     }
   ];
@@ -81,37 +81,37 @@ export default function RBACPage() {
   };
 
   return (
-    <div className="p-6 md:p-8 max-w-[1500px] mx-auto w-full flex flex-col gap-6">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-[1500px] mx-auto w-full flex flex-col gap-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-primary/20 pb-5">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-muted/60 dark:border-white/5 pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <ShieldCheck className="w-8 h-8 text-primary" />
-            <h1 className="text-2xl sm:text-3xl font-heading font-black text-foreground tracking-tight">
-              Role-Based Access Control <span className="text-primary text-glow">(RBAC)</span>
+            <ShieldCheck className="w-6 h-6 sm:w-7 sm:h-7 text-primary" />
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-heading font-extrabold text-foreground tracking-tight">
+              Role-Based Access Control <span className="text-primary">(RBAC)</span>
             </h1>
           </div>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-xs text-muted-foreground mt-0.5">
             Smart contract enforced defense permissions matrix on AccessControlManager.sol
           </p>
         </div>
 
-        <div className="px-3 py-1.5 rounded-lg border border-primary/30 bg-primary/10 text-primary font-mono text-xs font-bold">
-          EVM AccessControlManager.sol • ENFORCED
+        <div className="px-3 py-1.5 rounded-lg border border-primary/25 bg-primary/10 text-primary font-mono text-xs font-semibold">
+          AccessControlManager.sol • ENFORCED
         </div>
       </div>
 
       {/* 4 Role Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {roles.map((role, idx) => (
           <AnimatedCard 
             key={role.name} 
-            delay={idx * 0.08}
-            className="p-5 border border-primary/20 bg-card/60 backdrop-blur-xl flex flex-col justify-between rounded-2xl group hover:border-primary/50 transition-all"
+            delay={idx * 0.05}
+            className="p-5 border border-muted/80 dark:border-white/10 bg-card flex flex-col justify-between rounded-2xl group hover:border-primary/40 transition-all shadow-sm"
           >
             <div>
               <div className="flex justify-between items-center mb-3">
-                <div className={`px-2.5 py-1 rounded-lg text-xs font-mono font-black border ${role.color}`}>
+                <div className={`px-2.5 py-0.5 rounded-md text-xs font-mono font-bold border ${role.color}`}>
                   {role.name}
                 </div>
                 <span className="text-[10px] font-mono text-muted-foreground">
@@ -119,23 +119,23 @@ export default function RBACPage() {
                 </span>
               </div>
 
-              <div className="flex items-center gap-2 my-3 pb-3 border-b border-primary/10">
+              <div className="flex items-center gap-2 my-2 pb-2 border-b border-muted/60 dark:border-white/5">
                 <Users className="w-4 h-4 text-primary" />
-                <span className="text-xl font-mono font-black text-foreground">{role.users}</span>
+                <span className="text-lg font-mono font-black text-foreground">{role.users}</span>
                 <span className="text-xs text-muted-foreground">Active Officers</span>
               </div>
 
-              <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
+              <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
                 {role.description}
               </p>
 
               <div>
-                <h3 className="text-[11px] text-muted-foreground uppercase font-mono font-bold tracking-wider mb-2.5">
+                <h3 className="text-[10px] text-muted-foreground uppercase font-mono font-bold tracking-wider mb-2">
                   Granted Capabilities
                 </h3>
-                <ul className="space-y-2">
+                <ul className="space-y-1.5">
                   {role.permissions.map((perm, i) => (
-                    <li key={i} className="text-xs text-foreground flex items-start gap-2">
+                    <li key={i} className="text-xs text-foreground flex items-start gap-1.5">
                       <CheckCircle2 className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
                       <span className="leading-tight">{perm}</span>
                     </li>
@@ -144,18 +144,18 @@ export default function RBACPage() {
               </div>
             </div>
 
-            <div className="mt-6 pt-3 border-t border-primary/10 flex items-center justify-between text-[11px] font-mono text-muted-foreground">
-              <span>On-Chain Role</span>
-              <span className="text-primary font-bold">ACTIVE</span>
+            <div className="mt-4 pt-2 border-t border-muted/60 dark:border-white/5 flex items-center justify-between text-[10px] font-mono text-muted-foreground">
+              <span>On-Chain Status</span>
+              <span className="text-primary font-semibold">ACTIVE</span>
             </div>
           </AnimatedCard>
         ))}
       </div>
 
-      {/* Live Role Granting Panel & Security Explainer */}
+      {/* Role Granting & Explainer */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Role Granting Form (Col 6) */}
-        <AnimatedCard className="lg:col-span-6 p-6 border border-primary/20 bg-card/60 backdrop-blur-xl flex flex-col justify-between">
+        {/* Role Granting Form */}
+        <AnimatedCard className="lg:col-span-6 p-4 sm:p-6 border border-muted/80 dark:border-white/10 bg-card flex flex-col justify-between shadow-sm">
           <div>
             <div className="flex items-center gap-2 mb-2">
               <UserCheck className="w-5 h-5 text-primary" />
@@ -165,16 +165,16 @@ export default function RBACPage() {
               Directly assign on-chain RBAC roles by executing an authenticated administrative transaction.
             </p>
 
-            <form onSubmit={handleGrantRole} className="space-y-4">
+            <form onSubmit={handleGrantRole} className="space-y-3">
               <div>
-                <label className="text-xs font-mono text-muted-foreground uppercase">Target Officer Wallet Address</label>
+                <label className="text-xs font-mono text-muted-foreground uppercase">Target Officer Wallet</label>
                 <input
                   type="text"
                   required
                   placeholder="0x... recipient wallet address"
                   value={targetWallet}
                   onChange={(e) => setTargetWallet(e.target.value)}
-                  className="w-full mt-1 bg-background/80 border border-primary/30 rounded-xl px-3.5 py-2.5 text-xs font-mono text-foreground focus:outline-none focus:border-primary"
+                  className="w-full mt-1 bg-muted/30 dark:bg-white/5 border border-muted rounded-xl px-3 py-2.5 text-xs font-mono text-foreground focus:outline-none focus:border-primary"
                 />
               </div>
 
@@ -183,7 +183,7 @@ export default function RBACPage() {
                 <select
                   value={selectedRole}
                   onChange={(e) => setSelectedRole(e.target.value)}
-                  className="w-full mt-1 bg-background/80 border border-primary/30 rounded-xl px-3.5 py-2.5 text-xs font-mono text-foreground focus:outline-none focus:border-primary"
+                  className="w-full mt-1 bg-muted/30 dark:bg-white/5 border border-muted rounded-xl px-3 py-2.5 text-xs font-mono text-foreground focus:outline-none focus:border-primary"
                 >
                   <option value="ADMIN">ADMIN (Full Authority)</option>
                   <option value="MANAGER">MANAGER (Commander Ops)</option>
@@ -195,39 +195,39 @@ export default function RBACPage() {
               <button
                 type="submit"
                 disabled={isProcessing || !targetWallet}
-                className="w-full py-2.5 rounded-xl bg-primary text-background font-bold text-xs hover:shadow-glow transition-all disabled:opacity-50 font-mono flex items-center justify-center gap-2"
+                className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground font-medium text-xs hover:bg-primary/90 transition-all disabled:opacity-50 font-mono flex items-center justify-center gap-2 shadow-sm"
               >
                 <Shield className="w-4 h-4" />
-                {isProcessing ? 'Anchoring On-Chain...' : `Grant ${selectedRole} Role (EVM Transaction)`}
+                {isProcessing ? 'Anchoring On-Chain...' : `Grant ${selectedRole} Role (EVM Tx)`}
               </button>
             </form>
           </div>
         </AnimatedCard>
 
-        {/* Smart Contract Defense Enforcement Banner (Col 6) */}
-        <AnimatedCard className="lg:col-span-6 p-6 border border-primary/20 bg-card/60 backdrop-blur-xl flex flex-col justify-between">
+        {/* Security Explainer */}
+        <AnimatedCard className="lg:col-span-6 p-4 sm:p-6 border border-muted/80 dark:border-white/10 bg-card flex flex-col justify-between shadow-sm">
           <div>
-            <div className="flex items-center gap-2 text-accent mb-2">
-              <Lock className="w-5 h-5 text-accent" />
+            <div className="flex items-center gap-2 text-primary mb-2">
+              <Lock className="w-5 h-5 text-primary" />
               <h2 className="text-base font-bold text-foreground">Cryptographic RBAC vs Traditional Web RBAC</h2>
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              In conventional Web2 architectures, access control is enforced in API servers that can be bypassed if an attacker finds an SQL injection, unauthorized endpoint, or token forgery vulnerability.
+              In conventional Web2 architectures, access control is enforced in API servers that can be bypassed if an attacker finds an SQL injection, endpoint vulnerability, or token forgery flaw.
             </p>
 
-            <div className="mt-4 p-4 rounded-xl bg-background/50 border border-primary/15 space-y-2 text-xs">
-              <div className="flex items-center gap-2 text-emerald-400 font-bold font-mono">
-                <CheckCircle2 className="w-4 h-4" /> Mathematical EVM Rejection
+            <div className="mt-3 p-3.5 rounded-xl bg-muted/30 dark:bg-white/5 border border-muted space-y-1.5 text-xs">
+              <div className="flex items-center gap-2 text-emerald-500 font-bold font-mono">
+                <CheckCircle2 className="w-4 h-4" /> Mathematical Bytecode Enforcement
               </div>
               <p className="text-muted-foreground text-[11px] leading-relaxed">
-                In BEL SecureChain, every sensitive state update runs inside <span className="text-primary font-mono font-bold">AccessControlManager.sol</span>. Unsanctioned transactions revert at the bytecode level, guaranteeing zero bypassability.
+                In BEL SecureChain, every sensitive state update runs inside <span className="text-primary font-mono font-bold">AccessControlManager.sol</span>. Unsanctioned transactions revert at the EVM level.
               </p>
             </div>
           </div>
 
-          <div className="pt-4 border-t border-primary/10 flex items-center justify-between text-xs font-mono text-muted-foreground">
-            <span>Deployed at: 0x9d8e...1b2c</span>
-            <span className="text-accent font-bold">Sepolia EVM Verified</span>
+          <div className="pt-3 mt-3 border-t border-muted/60 dark:border-white/5 flex items-center justify-between text-xs font-mono text-muted-foreground">
+            <span className="truncate max-w-[200px]">0x9d8e...1b2c</span>
+            <span className="text-primary font-semibold">Sepolia EVM Verified</span>
           </div>
         </AnimatedCard>
       </div>

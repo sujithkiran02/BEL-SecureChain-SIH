@@ -5,14 +5,10 @@ import {
   ShieldCheck, 
   UserCircle, 
   Key, 
-  FileText, 
   CheckCircle2, 
   Copy, 
   Check, 
-  QrCode, 
-  Lock, 
   Fingerprint, 
-  Cpu, 
   ShieldAlert,
   AlertTriangle
 } from 'lucide-react';
@@ -70,74 +66,74 @@ export default function IdentityPage() {
   };
 
   return (
-    <div className="p-6 md:p-8 max-w-[1400px] mx-auto w-full flex flex-col gap-6">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-[1400px] mx-auto w-full flex flex-col gap-6">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-primary/20 pb-5">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-muted/60 dark:border-white/5 pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <UserCircle className="w-8 h-8 text-primary" />
-            <h1 className="text-2xl sm:text-3xl font-heading font-black text-foreground tracking-tight">
-              Decentralized Identity <span className="text-primary text-glow">(DID)</span>
+            <UserCircle className="w-6 h-6 sm:w-7 sm:h-7 text-primary" />
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-heading font-extrabold text-foreground tracking-tight">
+              Decentralized Identity <span className="text-primary">(DID)</span>
             </h1>
           </div>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-xs text-muted-foreground mt-0.5">
             W3C Compliant Self-Sovereign Identity and Cryptographic Role Clearances
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="px-3 py-1.5 rounded-lg border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 font-mono text-xs font-bold flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <div className="px-3 py-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-500 font-mono text-xs font-semibold flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             SIWE Authenticated
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Column: DID Document & Wallet Anchor (Col 7) */}
-        <AnimatedCard className="lg:col-span-7 p-6 border border-primary/20 bg-card/60 backdrop-blur-xl flex flex-col gap-6">
+        {/* Left Column: DID Document & Wallet Anchor */}
+        <AnimatedCard className="lg:col-span-7 p-4 sm:p-6 border border-muted/80 dark:border-white/10 bg-card flex flex-col gap-5 shadow-sm">
           {/* Identity Header */}
-          <div className="flex items-center gap-4 border-b border-primary/10 pb-5">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/30 to-accent/20 flex items-center justify-center border-2 border-primary shadow-[0_0_20px_rgba(0,240,255,0.3)]">
-              <Fingerprint className="w-9 h-9 text-primary" />
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 border-b border-muted/60 dark:border-white/5 pb-4">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+              <Fingerprint className="w-7 h-7 sm:w-8 sm:h-8" />
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold font-heading text-foreground">Officer Identity Record</h2>
-                <span className="text-[10px] font-mono text-muted-foreground bg-muted/40 px-2 py-0.5 rounded">
+                <h2 className="text-base sm:text-lg font-bold font-heading text-foreground">Officer Identity Record</h2>
+                <span className="text-[10px] font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded">
                   EVM ANCHOR
                 </span>
               </div>
-              <div className="flex flex-wrap items-center gap-2 mt-1.5">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mt-1.5">
                 {loading ? (
-                  <span className="text-xs text-muted-foreground animate-pulse">Verifying cryptographic state...</span>
+                  <span className="text-xs text-muted-foreground animate-pulse">Verifying state...</span>
                 ) : identityData ? (
                   <>
                     {identityData.isVerified ? (
-                      <span className="text-xs bg-emerald-500/20 text-emerald-400 px-2.5 py-0.5 rounded-full font-bold border border-emerald-500/40 flex items-center gap-1 font-mono">
+                      <span className="text-[11px] bg-emerald-500/10 text-emerald-500 px-2.5 py-0.5 rounded-full font-bold border border-emerald-500/20 flex items-center gap-1 font-mono">
                         <CheckCircle2 className="w-3 h-3" /> VERIFIED ON-CHAIN
                       </span>
                     ) : (
-                      <span className="text-xs bg-amber-500/20 text-amber-400 px-2.5 py-0.5 rounded-full font-bold border border-amber-500/40 flex items-center gap-1 font-mono">
-                        <AlertTriangle className="w-3 h-3" /> PENDING VALIDATION
+                      <span className="text-[11px] bg-amber-500/10 text-amber-500 px-2.5 py-0.5 rounded-full font-bold border border-amber-500/20 flex items-center gap-1 font-mono">
+                        <AlertTriangle className="w-3 h-3" /> PENDING
                       </span>
                     )}
                     
                     {identityData.isRevoked && (
-                      <span className="text-xs bg-red-500/20 text-red-400 px-2.5 py-0.5 rounded-full font-bold border border-red-500/40 flex items-center gap-1 font-mono">
+                      <span className="text-[11px] bg-red-500/10 text-red-500 px-2.5 py-0.5 rounded-full font-bold border border-red-500/20 flex items-center gap-1 font-mono">
                         <ShieldAlert className="w-3 h-3" /> REVOKED
                       </span>
                     )}
                     
                     {identityData.roles?.map((r: any) => (
-                      <span key={r.role} className="text-xs bg-primary/20 text-primary px-2.5 py-0.5 rounded-full font-bold border border-primary/40 font-mono">
+                      <span key={r.role} className="text-[11px] bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-bold border border-primary/20 font-mono">
                         {r.role}
                       </span>
                     ))}
                   </>
                 ) : (
-                  <span className="text-xs bg-primary/20 text-primary px-2.5 py-0.5 rounded-full font-bold border border-primary/40 font-mono">
-                    ADMIN_CLEARANCE (DEMO)
+                  <span className="text-[11px] bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-bold border border-primary/20 font-mono">
+                    ADMIN_CLEARANCE
                   </span>
                 )}
               </div>
@@ -155,11 +151,11 @@ export default function IdentityPage() {
                   onClick={copyDid}
                   className="text-xs text-primary hover:underline flex items-center gap-1 font-mono"
                 >
-                  {copiedDid ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                  {copiedDid ? 'Copied' : 'Copy DID'}
+                  {copiedDid ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                  {copiedDid ? 'Copied' : 'Copy'}
                 </button>
               </div>
-              <div className="p-3.5 bg-background/60 rounded-xl border border-primary/20 font-mono text-xs text-primary break-all shadow-inner">
+              <div className="p-3 bg-muted/40 dark:bg-white/5 rounded-xl border border-muted font-mono text-xs text-primary break-all">
                 {did}
               </div>
             </div>
@@ -173,77 +169,77 @@ export default function IdentityPage() {
                   onClick={copyKey}
                   className="text-xs text-primary hover:underline flex items-center gap-1 font-mono"
                 >
-                  {copiedKey ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                  {copiedKey ? 'Copied' : 'Copy Key'}
+                  {copiedKey ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                  {copiedKey ? 'Copied' : 'Copy'}
                 </button>
               </div>
-              <div className="p-3.5 bg-background/60 rounded-xl border border-primary/20 font-mono text-xs text-foreground break-all flex items-center gap-2 shadow-inner">
+              <div className="p-3 bg-muted/40 dark:bg-white/5 rounded-xl border border-muted font-mono text-xs text-foreground break-all flex items-center gap-2">
                 <Key className="w-4 h-4 text-primary shrink-0" />
-                <span>{demoAddress}</span>
+                <span className="truncate sm:break-all">{demoAddress}</span>
               </div>
             </div>
           </div>
 
           {/* Defense Attestation Metadata */}
-          <div className="grid grid-cols-2 gap-3 pt-3 border-t border-primary/10">
-            <div className="p-3 rounded-xl bg-background/40 border border-primary/15">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-muted/60 dark:border-white/5">
+            <div className="p-3 rounded-xl bg-muted/30 dark:bg-white/5 border border-muted">
               <div className="text-[10px] font-mono text-muted-foreground uppercase">Registry Smart Contract</div>
-              <div className="text-xs font-mono text-primary font-bold mt-1 truncate">IdentityRegistry.sol</div>
+              <div className="text-xs font-mono text-primary font-bold mt-0.5 truncate">IdentityRegistry.sol</div>
             </div>
-            <div className="p-3 rounded-xl bg-background/40 border border-primary/15">
+            <div className="p-3 rounded-xl bg-muted/30 dark:bg-white/5 border border-muted">
               <div className="text-[10px] font-mono text-muted-foreground uppercase">Signature Algorithm</div>
-              <div className="text-xs font-mono text-foreground font-bold mt-1">ECDSA (Keccak-256)</div>
+              <div className="text-xs font-mono text-foreground font-bold mt-0.5">ECDSA (Keccak-256)</div>
             </div>
           </div>
         </AnimatedCard>
 
-        {/* Right Column: Cryptographic Proofs & Security Posture (Col 5) */}
-        <AnimatedCard className="lg:col-span-5 p-6 border border-primary/20 bg-card/60 backdrop-blur-xl flex flex-col justify-between gap-6">
+        {/* Right Column: Cryptographic Proofs */}
+        <AnimatedCard className="lg:col-span-5 p-4 sm:p-6 border border-muted/80 dark:border-white/10 bg-card flex flex-col justify-between gap-5 shadow-sm">
           <div>
-            <h2 className="text-lg font-bold font-heading text-foreground border-b border-primary/10 pb-4 flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-accent" />
+            <h2 className="text-base sm:text-lg font-bold font-heading text-foreground border-b border-muted/60 dark:border-white/5 pb-3 flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-primary" />
               Cryptographic Proof Timeline
             </h2>
             
-            <div className="space-y-4 mt-4">
-              <div className="p-4 rounded-xl bg-accent/5 border border-accent/25 flex items-start gap-3.5">
-                <div className="mt-1 w-2.5 h-2.5 rounded-full bg-accent shadow-[0_0_8px_rgba(56,189,248,0.8)] shrink-0"></div>
+            <div className="space-y-3 mt-4">
+              <div className="p-3.5 rounded-xl bg-muted/30 dark:bg-white/5 border border-muted flex items-start gap-3">
+                <div className="mt-1 w-2 h-2 rounded-full bg-primary shrink-0"></div>
                 <div>
                   <h3 className="text-xs font-bold text-foreground font-mono">1. Sign-In with Ethereum (SIWE)</h3>
-                  <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
+                  <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
                     EIP-4361 cryptographically validated session signature. No plaintext passwords stored.
                   </p>
                 </div>
               </div>
 
-              <div className="p-4 rounded-xl bg-primary/5 border border-primary/25 flex items-start gap-3.5">
-                <div className="mt-1 w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_8px_rgba(0,240,255,0.8)] shrink-0"></div>
+              <div className="p-3.5 rounded-xl bg-muted/30 dark:bg-white/5 border border-muted flex items-start gap-3">
+                <div className="mt-1 w-2 h-2 rounded-full bg-primary shrink-0"></div>
                 <div>
-                  <h3 className="text-xs font-bold text-foreground font-mono">2. Zero-Knowledge Credential Proof</h3>
-                  <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
-                    Mathematical proof of defense operational clearance without disclosing personal identifier data.
+                  <h3 className="text-xs font-bold text-foreground font-mono">2. Zero-Knowledge Proof (ZKP)</h3>
+                  <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
+                    Mathematical proof of defense clearance without disclosing personal identifier data.
                   </p>
                 </div>
               </div>
 
-              <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/25 flex items-start gap-3.5">
-                <div className="mt-1 w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] shrink-0"></div>
+              <div className="p-3.5 rounded-xl bg-muted/30 dark:bg-white/5 border border-muted flex items-start gap-3">
+                <div className="mt-1 w-2 h-2 rounded-full bg-emerald-500 shrink-0"></div>
                 <div>
                   <h3 className="text-xs font-bold text-foreground font-mono">3. On-Chain Immutability Lock</h3>
-                  <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
-                    DID state is indexed in Sepolia EVM storage. Tamper-evident against rogue DB modifications.
+                  <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
+                    DID state is permanently indexed in Sepolia EVM storage.
                   </p>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="p-4 rounded-xl bg-card/80 border border-primary/20 flex items-center justify-between">
+          <div className="p-3.5 rounded-xl bg-muted/30 dark:bg-white/5 border border-muted flex items-center justify-between">
             <div>
               <div className="text-xs font-bold text-foreground">Identity Health Score</div>
               <div className="text-[10px] text-muted-foreground font-mono mt-0.5">Hardware Key Authenticated</div>
             </div>
-            <div className="text-xl font-mono font-black text-emerald-400">98 / 100</div>
+            <div className="text-lg font-mono font-black text-emerald-500">98 / 100</div>
           </div>
         </AnimatedCard>
       </div>

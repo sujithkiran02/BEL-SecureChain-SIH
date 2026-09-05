@@ -5,15 +5,11 @@ import { motion } from 'framer-motion';
 import { 
   Terminal, 
   ShieldAlert, 
-  Activity, 
   CheckCircle2, 
-  XCircle, 
   Download, 
   Search, 
   Copy, 
-  RefreshCw,
-  Clock,
-  Layers
+  RefreshCw
 } from 'lucide-react';
 import { AnimatedCard } from '@/components/ui/AnimatedCard';
 import { toast } from 'sonner';
@@ -90,60 +86,60 @@ export default function AuditLogsPage() {
   };
 
   return (
-    <div className="p-6 md:p-8 max-w-[1600px] mx-auto w-full flex flex-col gap-6">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto w-full flex flex-col gap-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-primary/20 pb-5">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-muted/60 dark:border-white/5 pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <Terminal className="w-8 h-8 text-primary" />
-            <h1 className="text-2xl sm:text-3xl font-heading font-black text-foreground tracking-tight">
-              Immutable Audit <span className="text-primary text-glow">Trail &amp; Logs</span>
+            <Terminal className="w-6 h-6 sm:w-7 sm:h-7 text-primary" />
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-heading font-extrabold text-foreground tracking-tight">
+              Immutable Audit <span className="text-primary">Logs</span>
             </h1>
           </div>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-xs text-muted-foreground mt-0.5">
             Cryptographically signed event ledger indexed from AuditLog.sol smart contract
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
           <button
             onClick={fetchLogs}
             disabled={isLoading}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-primary/30 bg-primary/10 text-primary text-xs font-mono font-bold hover:bg-primary/20 transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-muted bg-card text-foreground hover:border-primary/40 text-xs font-mono font-medium transition-all shadow-sm"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-            Sync
+            <span>Sync</span>
           </button>
           <button
             onClick={exportCSV}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-primary text-background text-xs font-mono font-bold hover:shadow-glow transition-all"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-primary text-primary-foreground text-xs font-mono font-medium hover:bg-primary/90 transition-all shadow-sm"
           >
             <Download className="w-3.5 h-3.5" />
-            Export CSV
+            <span>Export CSV</span>
           </button>
         </div>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-card/50 backdrop-blur-xl p-4 rounded-2xl border border-primary/20">
-        <div className="flex items-center gap-2 bg-background/60 border border-primary/20 rounded-xl px-3 py-2 w-full md:w-96">
-          <Search className="w-4 h-4 text-muted-foreground" />
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card p-3 sm:p-4 rounded-2xl border border-muted/80 dark:border-white/10 shadow-sm">
+        <div className="flex items-center gap-2 bg-muted/40 dark:bg-white/5 border border-muted rounded-xl px-3 py-2 w-full sm:w-80">
+          <Search className="w-4 h-4 text-muted-foreground shrink-0" />
           <input
             type="text"
-            placeholder="Filter logs by Tx ID, actor wallet, action..."
+            placeholder="Filter logs by Tx ID, actor, action..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="bg-transparent text-xs text-foreground placeholder:text-muted-foreground outline-none w-full font-mono"
           />
         </div>
 
-        <div className="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
           {['ALL', 'REGISTER', 'MINT', 'ROLE', 'QUARANTINE'].map(f => (
             <button 
               key={f}
               onClick={() => setFilter(f)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all ${
-                filter === f ? 'bg-primary text-background shadow-glow' : 'bg-background/40 text-muted-foreground border border-primary/10 hover:border-primary/30'
+              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-medium transition-all shrink-0 ${
+                filter === f ? 'bg-primary text-primary-foreground' : 'bg-muted/40 text-muted-foreground hover:text-foreground'
               }`}
             >
               {f}
@@ -153,48 +149,48 @@ export default function AuditLogsPage() {
       </div>
 
       {/* Main Logs Table Card */}
-      <AnimatedCard className="overflow-hidden p-0 bg-card/70 backdrop-blur-xl border-primary/20 rounded-2xl shadow-xl">
-        <div className="bg-background/80 border-b border-primary/15 px-6 py-3.5 flex items-center justify-between">
+      <AnimatedCard className="overflow-hidden p-0 bg-card border-muted/80 dark:border-white/10 rounded-2xl shadow-sm">
+        <div className="bg-muted/30 dark:bg-white/5 border-b border-muted/60 dark:border-white/5 px-4 sm:px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span className="text-xs font-mono text-emerald-400 uppercase tracking-widest font-bold">
-              AuditLog.sol Live Event Indexer Stream
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span className="text-xs font-mono text-emerald-500 uppercase tracking-wider font-semibold">
+              Live Event Indexer Stream
             </span>
           </div>
           <span className="text-xs font-mono text-muted-foreground">
-            {filteredLogs.length} Events Indexed
+            {filteredLogs.length} Events
           </span>
         </div>
         
-        <div className="p-6 overflow-x-auto">
+        <div className="p-4 sm:p-6 overflow-x-auto">
           {isLoading ? (
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {[1, 2, 3, 4, 5].map(i => (
-                <div key={i} className="h-12 bg-muted/40 rounded-xl animate-pulse"></div>
+                <div key={i} className="h-10 bg-muted/40 rounded-xl animate-pulse"></div>
               ))}
             </div>
           ) : (
-            <table className="w-full text-left border-collapse font-mono text-xs">
+            <table className="w-full text-left border-collapse font-mono text-xs min-w-[640px]">
               <thead>
-                <tr className="border-b border-primary/15 text-[11px] uppercase tracking-wider text-muted-foreground pb-3">
-                  <th className="pb-3 pr-4 font-bold">Tx Index / ID</th>
-                  <th className="pb-3 pr-4 font-bold">Action Type</th>
-                  <th className="pb-3 pr-4 font-bold">Actor (DID / Wallet)</th>
-                  <th className="pb-3 pr-4 font-bold">Target Resource</th>
-                  <th className="pb-3 pr-4 font-bold">Timestamp</th>
-                  <th className="pb-3 font-bold text-right">EVM Status</th>
+                <tr className="border-b border-muted text-[11px] uppercase tracking-wider text-muted-foreground pb-2">
+                  <th className="pb-2.5 pr-4 font-semibold">Tx ID</th>
+                  <th className="pb-2.5 pr-4 font-semibold">Action</th>
+                  <th className="pb-2.5 pr-4 font-semibold">Actor</th>
+                  <th className="pb-2.5 pr-4 font-semibold">Target</th>
+                  <th className="pb-2.5 pr-4 font-semibold">Timestamp</th>
+                  <th className="pb-2.5 text-right font-semibold">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredLogs.map((log, i) => (
                   <motion.tr 
                     key={log.id}
-                    initial={{ opacity: 0, x: -15 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.04 }}
-                    className="border-b border-primary/5 hover:bg-primary/5 transition-colors group"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: i * 0.02 }}
+                    className="border-b border-muted/40 hover:bg-muted/30 transition-colors group"
                   >
-                    <td className="py-3.5 pr-4 text-primary font-bold">
+                    <td className="py-3 pr-4 text-primary font-bold">
                       <div className="flex items-center gap-1.5">
                         <span>#{log.id}</span>
                         <button 
@@ -205,27 +201,27 @@ export default function AuditLogsPage() {
                         </button>
                       </div>
                     </td>
-                    <td className="py-3.5 pr-4 font-bold text-foreground">
+                    <td className="py-3 pr-4 font-medium text-foreground">
                       <span className={`px-2 py-0.5 rounded text-[10px] border ${
-                        log.action.includes('MINT') ? 'bg-primary/15 text-primary border-primary/30' :
-                        log.action.includes('QUARANTINE') || log.action.includes('REVOKE') ? 'bg-red-500/15 text-red-400 border-red-500/30' :
-                        log.action.includes('ROLE') ? 'bg-accent/15 text-accent border-accent/30' :
-                        'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                        log.action.includes('MINT') ? 'bg-primary/10 text-primary border-primary/20' :
+                        log.action.includes('QUARANTINE') || log.action.includes('REVOKE') ? 'bg-red-500/10 text-red-500 border-red-500/20' :
+                        log.action.includes('ROLE') ? 'bg-accent/10 text-accent border-accent/20' :
+                        'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
                       }`}>
                         {log.action}
                       </span>
                     </td>
-                    <td className="py-3.5 pr-4 text-muted-foreground font-mono truncate max-w-[200px]" title={log.subject}>
-                      {log.subject.length > 14 ? `${log.subject.substring(0, 14)}...` : log.subject}
+                    <td className="py-3 pr-4 text-muted-foreground font-mono truncate max-w-[180px]" title={log.subject}>
+                      {log.subject.length > 12 ? `${log.subject.substring(0, 12)}...` : log.subject}
                     </td>
-                    <td className="py-3.5 pr-4 text-foreground font-semibold truncate max-w-[200px]" title={log.resource}>
+                    <td className="py-3 pr-4 text-foreground truncate max-w-[180px]" title={log.resource}>
                       {log.resource}
                     </td>
-                    <td className="py-3.5 pr-4 text-muted-foreground text-[11px]">
-                      {new Date(log.timestamp).toLocaleString()}
+                    <td className="py-3 pr-4 text-muted-foreground text-[11px]">
+                      {new Date(log.timestamp).toLocaleTimeString()}
                     </td>
-                    <td className="py-3.5 text-right">
-                      <span className="inline-flex items-center gap-1 text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-0.5 rounded-full text-[10px] font-bold">
+                    <td className="py-3 text-right">
+                      <span className="inline-flex items-center gap-1 text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full text-[10px] font-medium">
                         <CheckCircle2 className="w-3 h-3" /> ANCHORED
                       </span>
                     </td>
@@ -236,9 +232,9 @@ export default function AuditLogsPage() {
           )}
           
           {!isLoading && filteredLogs.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground flex flex-col items-center">
-              <ShieldAlert className="w-12 h-12 mb-3 opacity-40 text-primary" />
-              <p className="font-mono text-xs">No audit records matching the specified criteria.</p>
+            <div className="text-center py-10 text-muted-foreground flex flex-col items-center">
+              <ShieldAlert className="w-10 h-10 mb-2 opacity-40 text-primary" />
+              <p className="font-mono text-xs">No audit records matching criteria.</p>
             </div>
           )}
         </div>

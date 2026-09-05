@@ -9,15 +9,9 @@ import {
   FileCheck, 
   Plus, 
   Check, 
-  Clock, 
   ArrowLeft, 
-  AlertCircle, 
-  Lock, 
-  Flame,
   CheckCircle2,
-  RefreshCw,
-  KeyRound,
-  FileText
+  X
 } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
@@ -163,21 +157,21 @@ export default function GovernancePage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col p-6 md:p-8 max-w-[1600px] mx-auto w-full gap-6 cyber-grid">
+    <div className="min-h-screen bg-background text-foreground flex flex-col p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto w-full gap-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-primary/20 pb-5">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-muted/60 dark:border-white/5 pb-4">
+        <div className="flex items-center gap-3">
           <Link
             href="/dashboard"
-            className="p-2.5 rounded-xl border border-primary/30 bg-primary/10 text-primary hover:bg-primary hover:text-background transition-all"
+            className="p-2 rounded-xl border border-muted bg-card hover:border-primary/40 text-foreground transition-all shrink-0"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-4 h-4" />
           </Link>
           <div>
             <div className="flex items-center gap-2">
-              <Users className="w-8 h-8 text-primary" />
-              <h1 className="text-2xl sm:text-3xl font-heading font-black tracking-tight">
-                Multi-Party <span className="text-primary text-glow">Quorum Governance</span>
+              <Users className="w-6 h-6 sm:w-7 sm:h-7 text-primary" />
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-heading font-extrabold tracking-tight">
+                Multi-Party <span className="text-primary">Quorum Governance</span>
               </h1>
             </div>
             <p className="text-xs text-muted-foreground mt-0.5">
@@ -186,32 +180,32 @@ export default function GovernancePage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
           <Link
             href="/soc"
-            className="px-4 py-2 rounded-xl border border-red-500/40 bg-red-500/10 text-red-400 font-mono font-bold text-xs hover:bg-red-500 hover:text-white transition-all"
+            className="px-3 py-1.5 rounded-xl border border-red-500/30 bg-red-500/5 text-red-500 font-mono font-medium text-xs hover:bg-red-500/10 transition-all"
           >
-            Defense SOC Radar &rarr;
+            SOC Radar &rarr;
           </Link>
           <button
             onClick={() => setIsCreateModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-background font-mono font-bold text-xs hover:shadow-glow transition-all"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-primary text-primary-foreground font-medium text-xs hover:bg-primary/90 transition-all shadow-sm"
           >
             <Plus className="w-4 h-4" />
-            Create Quorum Proposal
+            <span>Create Proposal</span>
           </button>
           <ThemeToggle />
         </div>
       </div>
 
       {/* Proposals Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {proposals.length === 0 ? (
-          <div className="col-span-full p-12 text-center text-muted-foreground border border-dashed border-primary/20 rounded-2xl bg-card/40">
-            <Users className="w-12 h-12 mx-auto text-primary/40 mb-3" />
-            <h3 className="text-base font-bold text-foreground">No Active Quorum Proposals</h3>
-            <p className="text-xs text-muted-foreground mt-1">
-              Click &quot;Create Quorum Proposal&quot; to initiate a multi-officer consensus action.
+          <div className="col-span-full p-10 text-center text-muted-foreground border border-dashed border-muted rounded-2xl bg-card">
+            <Users className="w-10 h-10 mx-auto text-primary/40 mb-2" />
+            <h3 className="text-sm font-bold text-foreground">No Active Quorum Proposals</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Click &quot;Create Proposal&quot; to initiate a multi-officer consensus action.
             </p>
           </div>
         ) : (
@@ -225,33 +219,33 @@ export default function GovernancePage() {
             return (
               <AnimatedCard
                 key={proposal.id}
-                className="p-6 bg-card/60 backdrop-blur-xl border border-primary/20 flex flex-col justify-between rounded-2xl relative overflow-hidden group hover:border-primary/50 transition-all shadow-lg"
+                className="p-5 sm:p-6 bg-card border border-muted/80 dark:border-white/10 flex flex-col justify-between rounded-2xl relative overflow-hidden group hover:border-primary/40 transition-all shadow-sm"
               >
                 <div>
                   <div className="flex justify-between items-start gap-2 mb-3">
-                    <span className={`text-[10px] font-mono font-bold px-2.5 py-1 rounded-full border ${
+                    <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border ${
                       proposal.status === 'EXECUTED'
-                        ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
+                        ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/25'
                         : proposal.status === 'APPROVED'
-                        ? 'bg-primary/20 text-primary border-primary/40'
-                        : 'bg-amber-500/20 text-amber-400 border-amber-500/40'
+                        ? 'bg-primary/10 text-primary border-primary/25'
+                        : 'bg-amber-500/10 text-amber-500 border-amber-500/25'
                     }`}>
                       {proposal.status}
                     </span>
 
-                    <span className="text-[10px] font-mono text-muted-foreground bg-background/60 px-2 py-0.5 rounded border border-primary/10">
+                    <span className="text-[10px] font-mono text-muted-foreground bg-muted/40 px-2 py-0.5 rounded">
                       {proposal.actionType}
                     </span>
                   </div>
 
-                  <h3 className="text-base font-bold font-heading text-foreground mb-2">{proposal.title}</h3>
-                  <p className="text-xs text-muted-foreground mb-4 leading-relaxed line-clamp-3">
+                  <h3 className="text-sm sm:text-base font-bold font-heading text-foreground mb-1.5">{proposal.title}</h3>
+                  <p className="text-xs text-muted-foreground mb-3 leading-relaxed line-clamp-3">
                     {proposal.description}
                   </p>
 
                   {proposal.targetResource && (
-                    <div className="p-2.5 rounded-xl bg-background/60 border border-primary/15 mb-4">
-                      <div className="text-[9px] text-muted-foreground uppercase font-mono font-semibold">Target Asset / DID</div>
+                    <div className="p-2 rounded-xl bg-muted/30 dark:bg-white/5 border border-muted mb-3">
+                      <div className="text-[9px] text-muted-foreground uppercase font-mono font-semibold">Target Resource</div>
                       <div className="text-xs font-mono text-primary font-bold truncate mt-0.5">
                         {proposal.targetResource}
                       </div>
@@ -259,8 +253,8 @@ export default function GovernancePage() {
                   )}
 
                   {/* Quorum Progress Bar */}
-                  <div className="mb-4">
-                    <div className="flex justify-between items-center text-xs mb-1.5 font-mono">
+                  <div className="mb-3">
+                    <div className="flex justify-between items-center text-xs mb-1 font-mono">
                       <span className="text-muted-foreground">Threshold</span>
                       <span className="font-bold text-foreground">
                         {signatureCount} / {proposal.requiredSignatures} Signatures
@@ -269,7 +263,7 @@ export default function GovernancePage() {
                     <div className="w-full bg-muted/40 h-2 rounded-full overflow-hidden">
                       <div
                         className={`h-full transition-all duration-500 ${
-                          isQuorumMet ? 'bg-emerald-500 shadow-[0_0_8px_rgba(52,211,153,0.8)]' : 'bg-primary shadow-[0_0_8px_rgba(0,240,255,0.8)]'
+                          isQuorumMet ? 'bg-emerald-500' : 'bg-primary'
                         }`}
                         style={{ width: `${Math.min(100, (signatureCount / proposal.requiredSignatures) * 100)}%` }}
                       />
@@ -277,12 +271,12 @@ export default function GovernancePage() {
                   </div>
 
                   {/* Signers List */}
-                  <div className="space-y-1 mb-4">
+                  <div className="space-y-1 mb-3">
                     <div className="text-[10px] font-mono uppercase text-muted-foreground font-semibold">Verified Signers:</div>
                     {(proposal.signatures || []).map((sig: any) => (
-                      <div key={sig.id} className="text-[10px] font-mono text-emerald-400 flex items-center gap-1.5">
-                        <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                        {sig.officerWallet.substring(0, 6)}...{sig.officerWallet.substring(sig.officerWallet.length - 4)} ({sig.officerRole})
+                      <div key={sig.id} className="text-[10px] font-mono text-emerald-500 flex items-center gap-1.5 truncate">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" />
+                        <span className="truncate">{sig.officerWallet.substring(0, 6)}...{sig.officerWallet.substring(sig.officerWallet.length - 4)} ({sig.officerRole})</span>
                       </div>
                     ))}
                     {(proposal.signatures || []).length === 0 && (
@@ -292,12 +286,12 @@ export default function GovernancePage() {
                 </div>
 
                 {/* Actions */}
-                <div className="pt-4 border-t border-primary/10 flex items-center gap-2">
+                <div className="pt-3 border-t border-muted/60 dark:border-white/5 flex items-center gap-2">
                   {proposal.status === 'PENDING' && (
                     <button
                       onClick={() => handleSignProposal(proposal)}
                       disabled={hasSigned || signingProposalId === proposal.id}
-                      className="flex-1 py-2 rounded-xl bg-primary/20 text-primary border border-primary/40 hover:bg-primary hover:text-background text-xs font-mono font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-1.5"
+                      className="flex-1 py-2 rounded-xl bg-primary/10 text-primary border border-primary/25 hover:bg-primary hover:text-primary-foreground text-xs font-mono font-medium transition-all disabled:opacity-50 flex items-center justify-center gap-1.5"
                     >
                       <ShieldCheck className="w-3.5 h-3.5" />
                       {hasSigned ? 'Signed by You' : 'Cryptographically Sign'}
@@ -307,7 +301,7 @@ export default function GovernancePage() {
                   {proposal.status === 'APPROVED' && (
                     <button
                       onClick={() => handleExecuteProposal(proposal.id)}
-                      className="flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-mono font-bold transition-all flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-500/25"
+                      className="flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-mono font-medium transition-all flex items-center justify-center gap-1.5 shadow-sm"
                     >
                       <FileCheck className="w-3.5 h-3.5" />
                       Execute On-Chain
@@ -315,7 +309,7 @@ export default function GovernancePage() {
                   )}
 
                   {proposal.status === 'EXECUTED' && (
-                    <div className="w-full py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-semibold text-center flex items-center justify-center gap-1.5">
+                    <div className="w-full py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs font-mono font-medium text-center flex items-center justify-center gap-1.5">
                       <Check className="w-3.5 h-3.5" />
                       Action Successfully Executed
                     </div>
@@ -327,46 +321,46 @@ export default function GovernancePage() {
         )}
       </div>
 
-      {/* Create Modal */}
+      {/* Create Modal (Responsive Viewport Heights) */}
       <AnimatePresence>
         {isCreateModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-md">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.96 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-card border border-primary/30 rounded-2xl p-6 max-w-lg w-full shadow-2xl flex flex-col gap-4"
+              exit={{ opacity: 0, scale: 0.96 }}
+              className="bg-card border border-muted/80 dark:border-white/10 rounded-2xl p-5 sm:p-6 max-w-lg w-full max-h-[90dvh] overflow-y-auto shadow-xl flex flex-col gap-4"
             >
-              <div className="flex justify-between items-center border-b border-primary/20 pb-3">
-                <h2 className="text-lg font-bold font-heading text-foreground">Draft Multi-Sig Quorum Action</h2>
+              <div className="flex justify-between items-center border-b border-muted/60 dark:border-white/5 pb-3">
+                <h2 className="text-base sm:text-lg font-bold font-heading text-foreground">Draft Multi-Sig Quorum Action</h2>
                 <button
                   onClick={() => setIsCreateModalOpen(false)}
-                  className="text-muted-foreground hover:text-foreground text-lg"
+                  className="p-1 rounded-lg text-muted-foreground hover:text-foreground"
                 >
-                  &times;
+                  <X className="w-5 h-5" />
                 </button>
               </div>
 
-              <form onSubmit={handleCreateProposal} className="flex flex-col gap-4">
+              <form onSubmit={handleCreateProposal} className="flex flex-col gap-3">
                 <div>
                   <label className="text-xs font-mono text-muted-foreground uppercase">Proposal Title</label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Authorize Top Secret Radar Blueprint Mint"
+                    placeholder="e.g. Authorize Radar Blueprint Mint"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className="w-full mt-1 bg-background/80 border border-primary/30 rounded-xl px-3 py-2 text-xs font-mono text-foreground focus:outline-none focus:border-primary"
+                    className="w-full mt-1 bg-muted/30 dark:bg-white/5 border border-muted rounded-xl px-3 py-2 text-xs font-mono text-foreground focus:outline-none focus:border-primary"
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   <div>
                     <label className="text-xs font-mono text-muted-foreground uppercase">Action Type</label>
                     <select
                       value={actionType}
                       onChange={(e) => setActionType(e.target.value)}
-                      className="w-full mt-1 bg-background/80 border border-primary/30 rounded-xl px-3 py-2 text-xs font-mono text-foreground focus:outline-none focus:border-primary"
+                      className="w-full mt-1 bg-muted/30 dark:bg-white/5 border border-muted rounded-xl px-3 py-2 text-xs font-mono text-foreground focus:outline-none focus:border-primary"
                     >
                       <option value="MINT_CLASSIFIED">MINT_CLASSIFIED</option>
                       <option value="REVOKE_ASSET">REVOKE_ASSET</option>
@@ -383,7 +377,7 @@ export default function GovernancePage() {
                       max={5}
                       value={requiredSignatures}
                       onChange={(e) => setRequiredSignatures(Number(e.target.value))}
-                      className="w-full mt-1 bg-background/80 border border-primary/30 rounded-xl px-3 py-2 text-xs font-mono text-foreground focus:outline-none focus:border-primary"
+                      className="w-full mt-1 bg-muted/30 dark:bg-white/5 border border-muted rounded-xl px-3 py-2 text-xs font-mono text-foreground focus:outline-none focus:border-primary"
                     />
                   </div>
                 </div>
@@ -395,7 +389,7 @@ export default function GovernancePage() {
                     placeholder="e.g. 0x82f... or Asset #104"
                     value={targetResource}
                     onChange={(e) => setTargetResource(e.target.value)}
-                    className="w-full mt-1 bg-background/80 border border-primary/30 rounded-xl px-3 py-2 text-xs font-mono text-foreground focus:outline-none focus:border-primary"
+                    className="w-full mt-1 bg-muted/30 dark:bg-white/5 border border-muted rounded-xl px-3 py-2 text-xs font-mono text-foreground focus:outline-none focus:border-primary"
                   />
                 </div>
 
@@ -404,24 +398,24 @@ export default function GovernancePage() {
                   <textarea
                     rows={3}
                     required
-                    placeholder="Provide defense mission justification for this quorum request..."
+                    placeholder="Provide defense mission justification..."
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    className="w-full mt-1 bg-background/80 border border-primary/30 rounded-xl px-3 py-2 text-xs font-mono text-foreground focus:outline-none focus:border-primary"
+                    className="w-full mt-1 bg-muted/30 dark:bg-white/5 border border-muted rounded-xl px-3 py-2 text-xs font-mono text-foreground focus:outline-none focus:border-primary"
                   />
                 </div>
 
-                <div className="flex justify-end gap-3 pt-3 border-t border-primary/10">
+                <div className="flex justify-end gap-2 pt-2 border-t border-muted/60 dark:border-white/5">
                   <button
                     type="button"
                     onClick={() => setIsCreateModalOpen(false)}
-                    className="px-4 py-2 rounded-xl border border-muted text-muted-foreground text-xs font-mono font-semibold hover:bg-muted/20"
+                    className="px-3.5 py-2 rounded-xl border border-muted text-muted-foreground text-xs font-mono font-medium hover:bg-muted/40"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-2 rounded-xl bg-primary text-background font-mono font-bold text-xs hover:shadow-glow"
+                    className="px-4 py-2 rounded-xl bg-primary text-primary-foreground font-mono font-medium text-xs hover:bg-primary/90 shadow-sm"
                   >
                     Submit Proposal
                   </button>

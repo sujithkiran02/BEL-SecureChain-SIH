@@ -1,6 +1,6 @@
 'use client';
 
-import { FileCode2, Network, CheckCircle2, Zap, Copy, ExternalLink, Cpu, Layers } from 'lucide-react';
+import { FileCode2, Network, CheckCircle2, Zap, Copy } from 'lucide-react';
 import { AnimatedCard } from '@/components/ui/AnimatedCard';
 import { toast } from 'sonner';
 
@@ -59,71 +59,71 @@ export default function SmartContractsPage() {
   };
 
   return (
-    <div className="p-6 md:p-8 max-w-[1500px] mx-auto w-full flex flex-col gap-6">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-[1500px] mx-auto w-full flex flex-col gap-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-primary/20 pb-5">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-muted/60 dark:border-white/5 pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <FileCode2 className="w-8 h-8 text-primary" />
-            <h1 className="text-2xl sm:text-3xl font-heading font-black text-foreground tracking-tight">
-              Smart Contracts <span className="text-primary text-glow">&amp; EVM Logic</span>
+            <FileCode2 className="w-6 h-6 sm:w-7 sm:h-7 text-primary" />
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-heading font-extrabold text-foreground tracking-tight">
+              Smart Contracts <span className="text-primary">&amp; EVM Logic</span>
             </h1>
           </div>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-xs text-muted-foreground mt-0.5">
             Deployed defense smart contracts powering zero-trust enforcement, identity, and governance
           </p>
         </div>
 
-        <div className="px-3 py-1.5 rounded-lg border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 font-mono text-xs font-bold flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <div className="px-3 py-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-500 font-mono text-xs font-semibold flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
           5 / 5 Contracts Verified
         </div>
       </div>
 
       {/* Contracts Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {contracts.map((contract, idx) => (
           <AnimatedCard 
             key={contract.name} 
-            delay={idx * 0.08}
-            className="p-6 border border-primary/20 bg-card/60 backdrop-blur-xl flex flex-col justify-between rounded-2xl group hover:border-primary/50 transition-all hover:shadow-[0_0_25px_rgba(0,240,255,0.15)]"
+            delay={idx * 0.05}
+            className="p-5 border border-muted/80 dark:border-white/10 bg-card flex flex-col justify-between rounded-2xl group hover:border-primary/40 transition-all shadow-sm"
           >
             <div>
               <div className="flex justify-between items-start mb-3">
-                <div className="p-2.5 rounded-xl bg-primary/10 text-primary border border-primary/25">
+                <div className="p-2 rounded-xl bg-primary/10 text-primary border border-primary/20">
                   <FileCode2 className="w-5 h-5" />
                 </div>
-                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border border-emerald-500/40 bg-emerald-500/15 text-emerald-400">
+                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-500">
                   {contract.status}
                 </span>
               </div>
 
-              <h2 className="text-base font-bold text-foreground font-mono group-hover:text-primary transition-colors">
+              <h2 className="text-sm sm:text-base font-bold text-foreground font-mono group-hover:text-primary transition-colors">
                 {contract.name}
               </h2>
 
               <div 
                 onClick={() => copyAddress(contract.address)}
-                className="my-3 p-2.5 rounded-xl bg-background/50 border border-primary/15 flex items-center justify-between cursor-pointer hover:border-primary/40 transition-colors group/addr"
+                className="my-2.5 p-2 rounded-xl bg-muted/40 dark:bg-white/5 border border-muted flex items-center justify-between cursor-pointer hover:border-primary/40 transition-colors group/addr"
                 title="Click to copy address"
               >
-                <span className="text-[11px] font-mono text-primary truncate">
+                <span className="text-[10px] font-mono text-primary truncate max-w-[200px]">
                   {contract.address.substring(0, 10)}...{contract.address.substring(contract.address.length - 8)}
                 </span>
-                <Copy className="w-3.5 h-3.5 text-muted-foreground group-hover/addr:text-primary transition-colors" />
+                <Copy className="w-3.5 h-3.5 text-muted-foreground group-hover/addr:text-primary transition-colors shrink-0 ml-1" />
               </div>
 
-              <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
+              <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
                 {contract.description}
               </p>
 
               <div>
-                <div className="text-[10px] uppercase font-mono text-muted-foreground font-bold tracking-wider mb-2">
+                <div className="text-[9px] uppercase font-mono text-muted-foreground font-bold tracking-wider mb-1.5">
                   Key Interface Methods
                 </div>
-                <div className="flex flex-wrap gap-1.5">
+                <div className="flex flex-wrap gap-1">
                   {contract.methods.map((m, i) => (
-                    <span key={i} className="text-[10px] font-mono px-2 py-0.5 rounded bg-muted/40 border border-primary/10 text-muted-foreground">
+                    <span key={i} className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-muted/50 border border-muted text-muted-foreground">
                       {m}
                     </span>
                   ))}
@@ -131,32 +131,32 @@ export default function SmartContractsPage() {
               </div>
             </div>
 
-            <div className="pt-4 mt-5 border-t border-primary/10 flex items-center justify-between text-[11px] font-mono text-muted-foreground">
-              <span className="text-accent flex items-center gap-1">
-                <Network className="w-3.5 h-3.5" />
+            <div className="pt-3 mt-4 border-t border-muted/60 dark:border-white/5 flex items-center justify-between text-[10px] font-mono text-muted-foreground">
+              <span className="text-primary flex items-center gap-1">
+                <Network className="w-3 h-3" />
                 {contract.network}
               </span>
-              <span>Avg Gas: {contract.gasUsed}</span>
+              <span>Gas: {contract.gasUsed}</span>
             </div>
           </AnimatedCard>
         ))}
       </div>
 
       {/* Engine Status Banner */}
-      <AnimatedCard className="p-6 border border-accent/20 bg-card/60 backdrop-blur-xl flex flex-col sm:flex-row items-center justify-between gap-4 rounded-2xl">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-accent/20 flex items-center justify-center border border-accent/40 shadow-[0_0_20px_rgba(56,189,248,0.3)] shrink-0">
-            <Zap className="w-6 h-6 text-accent" />
+      <AnimatedCard className="p-4 sm:p-6 border border-muted/80 dark:border-white/10 bg-card flex flex-col sm:flex-row items-center justify-between gap-4 rounded-2xl shadow-sm">
+        <div className="flex items-center gap-3.5 text-center sm:text-left">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+            <Zap className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-foreground">Deterministic EVM Execution Engine</h3>
+            <h3 className="text-sm sm:text-base font-bold text-foreground">Deterministic EVM Execution Engine</h3>
             <p className="text-xs text-muted-foreground mt-0.5">
-              All state transitions are formally verified, isolated, and permanently recorded on the blockchain ledger.
+              All state transitions are formally verified and permanently recorded on the blockchain ledger.
             </p>
           </div>
         </div>
-        <div className="px-4 py-2 bg-background/80 border border-primary/30 rounded-xl text-xs font-mono font-bold text-primary shadow-glow shrink-0">
-          STATUS: 100% OPERATIONAL
+        <div className="px-3.5 py-1.5 bg-muted rounded-xl text-xs font-mono font-bold text-primary shrink-0">
+          STATUS: OPERATIONAL
         </div>
       </AnimatedCard>
     </div>
