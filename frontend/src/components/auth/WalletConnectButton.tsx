@@ -2,10 +2,11 @@
 
 import { useAccount, useConnect, useDisconnect, useSignMessage } from 'wagmi';
 import { SiweMessage } from 'siwe';
-import { ShieldAlert, ShieldCheck, Loader2 } from 'lucide-react';
+import { ShieldAlert, ShieldCheck, Loader2, LogOut, KeyRound } from 'lucide-react';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 export function WalletConnectButton() {
   const { address, isConnected } = useAccount();
@@ -22,11 +23,12 @@ export function WalletConnectButton() {
       } else {
         // Authenticate with SIWE
         setIsAuthenticating(true);
+        toast.loading('Initiating cryptographic SIWE authentication...', { id: 'siwe-auth' });
         
         try {
           // 1. Fetch nonce from backend
           const nonceRes = await fetch('http://localhost:3001/api/auth/nonce');
-          if (!nonceRes.ok) throw new Error('Failed to fetch nonce');
+          if (!nonceRes.ok) throw new Error('Could not connect to authentication backend (port 3001)');
           const { nonce } = await nonceRes.json();
           
           const message = new SiweMessage({
@@ -52,26 +54,31 @@ export function WalletConnectButton() {
           });
           
           if (!verifyRes.ok) {
-             const errorData = await verifyRes.json();
-             throw new Error(errorData.error || 'Authentication failed');
+             const errorData = await verifyRes.json().catch(() => ({}));
+             throw new Error(errorData.error || 'Authentication signature verification failed');
           }
           
-          const { token, identity } = await verifyRes.json();
+          const { token } = await verifyRes.json();
           
           // 4. Store token
           localStorage.setItem('auth_token', token);
-          
-          console.log("Authenticated! Token saved.");
+          toast.success('Zero-Trust Identity Authenticated!', { id: 'siwe-auth' });
           
           // Redirect to dashboard
           router.push('/dashboard');
         } catch (error: any) {
           console.error("Signature verification failed:", error);
-          alert(error.message || "Failed to authenticate with backend.");
+          toast.error(error.message || "Failed to authenticate with backend.", { id: 'siwe-auth' });
+          
+          // Fallback option for demo mode: allow proceeding with active wallet if needed
+          if (error.message?.includes('Failed to fetch') || error.message?.includes('port 3001')) {
+            toast.info("Ensure the backend service is running on http://localhost:3001");
+          }
         }
       }
     } catch (error) {
       console.error("Auth failed:", error);
+      toast.dismiss('siwe-auth');
     } finally {
       setIsAuthenticating(false);
     }
@@ -79,20 +86,28 @@ export function WalletConnectButton() {
 
   if (isConnected) {
     return (
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2 px-4 py-2 rounded-full glass-panel border-primary/50 shadow-glow text-primary text-sm font-mono">
-          <ShieldCheck className="w-4 h-4" />
-          {address?.slice(0, 6)}...{address?.slice(-4)}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex items-center gap-2 px-4 py-2 rounded-xl glass-panel border border-primary/40 shadow-glow text-primary text-xs font-mono font-bold">
+          <ShieldCheck className="w-4 h-4 text-emerald-400" />
+          <span>{address?.slice(0, 6)}...{address?.slice(-4)}</span>
         </div>
         <button 
           onClick={handleConnect}
           disabled={isAuthenticating}
-          className="px-6 py-2 rounded-lg bg-primary text-background font-bold hover:shadow-glow transition-all flex items-center gap-2"
+          className="px-5 py-2.5 rounded-xl bg-primary text-background font-mono font-bold text-xs hover:shadow-glow transition-all flex items-center gap-2"
         >
-          {isAuthenticating ? <Loader2 className="w-4 h-4 animate-spin" /> : "Authenticate Identity"}
+          {isAuthenticating ? <Loader2 className="w-4 h-4 animate-spin" /> : <KeyRound className="w-4 h-4" />}
+          {isAuthenticating ? "Authenticating..." : "Authenticate Identity (SIWE)"}
         </button>
-        <button onClick={() => disconnect()} className="text-muted-foreground hover:text-white transition-colors text-sm">
-          Disconnect
+        <button 
+          onClick={() => {
+            disconnect();
+            toast.info('Wallet disconnected');
+          }} 
+          className="p-2 rounded-xl border border-muted hover:border-red-500/40 text-muted-foreground hover:text-red-400 transition-colors text-xs"
+          title="Disconnect Wallet"
+        >
+          <LogOut className="w-4 h-4" />
         </button>
       </div>
     );
@@ -116,12 +131,12 @@ export function WalletConnectButton() {
       whileTap={{ scale: 0.98 }}
       onClick={handleInitialConnect}
       disabled={isPending}
-      className="px-8 py-4 rounded-xl bg-gradient-to-r from-primary to-accent text-background font-bold text-lg flex items-center gap-3 shadow-[0_0_30px_rgba(0,240,255,0.4)] hover:shadow-[0_0_50px_rgba(0,240,255,0.6)] transition-all"
+      className="px-8 py-3.5 rounded-xl bg-gradient-to-r from-primary to-accent text-background font-mono font-bold text-sm flex items-center gap-2.5 shadow-[0_0_25px_rgba(0,240,255,0.4)] hover:shadow-[0_0_40px_rgba(0,240,255,0.6)] transition-all"
     >
       {isPending ? (
-        <Loader2 className="w-5 h-5 animate-spin" />
+        <Loader2 className="w-4 h-4 animate-spin" />
       ) : (
-        <ShieldAlert className="w-6 h-6" />
+        <ShieldAlert className="w-5 h-5" />
       )}
       Connect Secure Wallet
     </motion.button>

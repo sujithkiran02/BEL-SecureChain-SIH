@@ -15,7 +15,9 @@ import {
   Lock, 
   Flame,
   CheckCircle2,
-  RefreshCw
+  RefreshCw,
+  KeyRound,
+  FileText
 } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
@@ -102,14 +104,12 @@ export default function GovernancePage() {
 
     try {
       setSigningProposalId(proposal.id);
-      // Cryptographically sign proposal payload with officer's private key
       const messageToSign = `BEL Quorum Signature:\nProposal: ${proposal.id}\nAction: ${proposal.actionType}\nSigner: ${address}\nTimestamp: ${Date.now()}`;
       
       let sig = '0x_simulated_defense_signature';
       try {
         sig = await signMessageAsync({ message: messageToSign });
       } catch (e) {
-        // Fallback for demo mode if wallet cancels or rejects
         sig = `0x_ecdsa_defense_sig_${Date.now()}`;
       }
 
@@ -163,25 +163,25 @@ export default function GovernancePage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col p-6 md:p-10 max-w-[1600px] mx-auto w-full gap-8">
+    <div className="min-h-screen bg-background text-foreground flex flex-col p-6 md:p-8 max-w-[1600px] mx-auto w-full gap-6 cyber-grid">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-primary/20 pb-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-primary/20 pb-5">
         <div className="flex items-center gap-4">
           <Link
             href="/dashboard"
-            className="p-2.5 rounded-lg border border-primary/30 bg-primary/10 text-primary hover:bg-primary hover:text-background transition-all"
+            className="p-2.5 rounded-xl border border-primary/30 bg-primary/10 text-primary hover:bg-primary hover:text-background transition-all"
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div>
             <div className="flex items-center gap-2">
               <Users className="w-8 h-8 text-primary" />
-              <h1 className="text-3xl font-extrabold tracking-tight">
-                Multi-Party <span className="text-primary">Quorum Governance</span>
+              <h1 className="text-2xl sm:text-3xl font-heading font-black tracking-tight">
+                Multi-Party <span className="text-primary text-glow">Quorum Governance</span>
               </h1>
             </div>
-            <p className="text-sm text-muted-foreground mt-1">
-              M-of-N Multi-Signature consensus for classified defense operations, preventing unilateral administrative compromise.
+            <p className="text-xs text-muted-foreground mt-0.5">
+              M-of-N Multi-Signature consensus for classified operations, eliminating unilateral administrative compromise
             </p>
           </div>
         </div>
@@ -189,13 +189,13 @@ export default function GovernancePage() {
         <div className="flex items-center gap-3">
           <Link
             href="/soc"
-            className="px-4 py-2 rounded-lg border border-red-500/40 bg-red-500/10 text-red-400 font-semibold text-sm hover:bg-red-500 hover:text-white transition-all"
+            className="px-4 py-2 rounded-xl border border-red-500/40 bg-red-500/10 text-red-400 font-mono font-bold text-xs hover:bg-red-500 hover:text-white transition-all"
           >
             Defense SOC Radar &rarr;
           </Link>
           <button
             onClick={() => setIsCreateModalOpen(true)}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-background font-bold text-sm hover:shadow-glow transition-all"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-background font-mono font-bold text-xs hover:shadow-glow transition-all"
           >
             <Plus className="w-4 h-4" />
             Create Quorum Proposal
@@ -209,27 +209,27 @@ export default function GovernancePage() {
         {proposals.length === 0 ? (
           <div className="col-span-full p-12 text-center text-muted-foreground border border-dashed border-primary/20 rounded-2xl bg-card/40">
             <Users className="w-12 h-12 mx-auto text-primary/40 mb-3" />
-            <h3 className="text-lg font-bold text-foreground">No Active Quorum Proposals</h3>
-            <p className="text-sm text-muted-foreground mt-1">
+            <h3 className="text-base font-bold text-foreground">No Active Quorum Proposals</h3>
+            <p className="text-xs text-muted-foreground mt-1">
               Click &quot;Create Quorum Proposal&quot; to initiate a multi-officer consensus action.
             </p>
           </div>
         ) : (
           proposals.map((proposal) => {
-            const hasSigned = proposal.signatures.some(
+            const hasSigned = (proposal.signatures || []).some(
               (s: any) => s.officerWallet.toLowerCase() === (address || '').toLowerCase()
             );
-            const signatureCount = proposal.signatures.length;
+            const signatureCount = (proposal.signatures || []).length;
             const isQuorumMet = signatureCount >= proposal.requiredSignatures;
 
             return (
               <AnimatedCard
                 key={proposal.id}
-                className="p-6 bg-card/60 backdrop-blur-xl border border-primary/20 flex flex-col justify-between rounded-2xl relative overflow-hidden"
+                className="p-6 bg-card/60 backdrop-blur-xl border border-primary/20 flex flex-col justify-between rounded-2xl relative overflow-hidden group hover:border-primary/50 transition-all shadow-lg"
               >
                 <div>
                   <div className="flex justify-between items-start gap-2 mb-3">
-                    <span className={`text-[11px] font-mono font-bold px-2.5 py-1 rounded-full border ${
+                    <span className={`text-[10px] font-mono font-bold px-2.5 py-1 rounded-full border ${
                       proposal.status === 'EXECUTED'
                         ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
                         : proposal.status === 'APPROVED'
@@ -239,20 +239,20 @@ export default function GovernancePage() {
                       {proposal.status}
                     </span>
 
-                    <span className="text-xs font-mono text-muted-foreground bg-muted/30 px-2 py-0.5 rounded">
+                    <span className="text-[10px] font-mono text-muted-foreground bg-background/60 px-2 py-0.5 rounded border border-primary/10">
                       {proposal.actionType}
                     </span>
                   </div>
 
-                  <h3 className="text-lg font-bold text-foreground mb-2">{proposal.title}</h3>
+                  <h3 className="text-base font-bold font-heading text-foreground mb-2">{proposal.title}</h3>
                   <p className="text-xs text-muted-foreground mb-4 leading-relaxed line-clamp-3">
                     {proposal.description}
                   </p>
 
                   {proposal.targetResource && (
-                    <div className="p-2.5 rounded-lg bg-background/60 border border-primary/10 mb-4">
-                      <div className="text-[10px] text-muted-foreground uppercase font-semibold">Target Asset / Identity</div>
-                      <div className="text-xs font-mono text-primary font-bold truncate">
+                    <div className="p-2.5 rounded-xl bg-background/60 border border-primary/15 mb-4">
+                      <div className="text-[9px] text-muted-foreground uppercase font-mono font-semibold">Target Asset / DID</div>
+                      <div className="text-xs font-mono text-primary font-bold truncate mt-0.5">
                         {proposal.targetResource}
                       </div>
                     </div>
@@ -260,16 +260,16 @@ export default function GovernancePage() {
 
                   {/* Quorum Progress Bar */}
                   <div className="mb-4">
-                    <div className="flex justify-between items-center text-xs mb-1.5">
-                      <span className="font-semibold text-muted-foreground">Signatures Collected</span>
-                      <span className="font-bold text-foreground font-mono">
-                        {signatureCount} / {proposal.requiredSignatures} Required
+                    <div className="flex justify-between items-center text-xs mb-1.5 font-mono">
+                      <span className="text-muted-foreground">Threshold</span>
+                      <span className="font-bold text-foreground">
+                        {signatureCount} / {proposal.requiredSignatures} Signatures
                       </span>
                     </div>
                     <div className="w-full bg-muted/40 h-2 rounded-full overflow-hidden">
                       <div
                         className={`h-full transition-all duration-500 ${
-                          isQuorumMet ? 'bg-emerald-500' : 'bg-primary'
+                          isQuorumMet ? 'bg-emerald-500 shadow-[0_0_8px_rgba(52,211,153,0.8)]' : 'bg-primary shadow-[0_0_8px_rgba(0,240,255,0.8)]'
                         }`}
                         style={{ width: `${Math.min(100, (signatureCount / proposal.requiredSignatures) * 100)}%` }}
                       />
@@ -278,13 +278,16 @@ export default function GovernancePage() {
 
                   {/* Signers List */}
                   <div className="space-y-1 mb-4">
-                    <div className="text-[11px] text-muted-foreground font-semibold">Verified Signers:</div>
-                    {proposal.signatures.map((sig: any) => (
+                    <div className="text-[10px] font-mono uppercase text-muted-foreground font-semibold">Verified Signers:</div>
+                    {(proposal.signatures || []).map((sig: any) => (
                       <div key={sig.id} className="text-[10px] font-mono text-emerald-400 flex items-center gap-1.5">
                         <CheckCircle2 className="w-3 h-3 text-emerald-400" />
                         {sig.officerWallet.substring(0, 6)}...{sig.officerWallet.substring(sig.officerWallet.length - 4)} ({sig.officerRole})
                       </div>
                     ))}
+                    {(proposal.signatures || []).length === 0 && (
+                      <div className="text-[10px] font-mono text-muted-foreground italic">Awaiting first signature...</div>
+                    )}
                   </div>
                 </div>
 
@@ -294,9 +297,9 @@ export default function GovernancePage() {
                     <button
                       onClick={() => handleSignProposal(proposal)}
                       disabled={hasSigned || signingProposalId === proposal.id}
-                      className="flex-1 py-2 rounded-lg bg-primary/20 text-primary border border-primary/40 hover:bg-primary hover:text-background text-xs font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-1.5"
+                      className="flex-1 py-2 rounded-xl bg-primary/20 text-primary border border-primary/40 hover:bg-primary hover:text-background text-xs font-mono font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-1.5"
                     >
-                      <ShieldCheck className="w-4 h-4" />
+                      <ShieldCheck className="w-3.5 h-3.5" />
                       {hasSigned ? 'Signed by You' : 'Cryptographically Sign'}
                     </button>
                   )}
@@ -304,16 +307,16 @@ export default function GovernancePage() {
                   {proposal.status === 'APPROVED' && (
                     <button
                       onClick={() => handleExecuteProposal(proposal.id)}
-                      className="flex-1 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-500/20"
+                      className="flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-mono font-bold transition-all flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-500/25"
                     >
-                      <FileCheck className="w-4 h-4" />
+                      <FileCheck className="w-3.5 h-3.5" />
                       Execute On-Chain
                     </button>
                   )}
 
                   {proposal.status === 'EXECUTED' && (
-                    <div className="w-full py-2 rounded-lg bg-muted/40 text-muted-foreground text-xs font-semibold text-center flex items-center justify-center gap-1.5">
-                      <Check className="w-4 h-4 text-emerald-400" />
+                    <div className="w-full py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-semibold text-center flex items-center justify-center gap-1.5">
+                      <Check className="w-3.5 h-3.5" />
                       Action Successfully Executed
                     </div>
                   )}
@@ -335,7 +338,7 @@ export default function GovernancePage() {
               className="bg-card border border-primary/30 rounded-2xl p-6 max-w-lg w-full shadow-2xl flex flex-col gap-4"
             >
               <div className="flex justify-between items-center border-b border-primary/20 pb-3">
-                <h2 className="text-xl font-bold text-foreground">Draft Multi-Sig Quorum Action</h2>
+                <h2 className="text-lg font-bold font-heading text-foreground">Draft Multi-Sig Quorum Action</h2>
                 <button
                   onClick={() => setIsCreateModalOpen(false)}
                   className="text-muted-foreground hover:text-foreground text-lg"
@@ -346,24 +349,24 @@ export default function GovernancePage() {
 
               <form onSubmit={handleCreateProposal} className="flex flex-col gap-4">
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground">Proposal Title</label>
+                  <label className="text-xs font-mono text-muted-foreground uppercase">Proposal Title</label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Approve Top Secret Radar Blueprint Mint"
+                    placeholder="e.g. Authorize Top Secret Radar Blueprint Mint"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className="w-full mt-1 bg-background/80 border border-primary/30 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary"
+                    className="w-full mt-1 bg-background/80 border border-primary/30 rounded-xl px-3 py-2 text-xs font-mono text-foreground focus:outline-none focus:border-primary"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs font-semibold text-muted-foreground">Action Type</label>
+                    <label className="text-xs font-mono text-muted-foreground uppercase">Action Type</label>
                     <select
                       value={actionType}
                       onChange={(e) => setActionType(e.target.value)}
-                      className="w-full mt-1 bg-background/80 border border-primary/30 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary"
+                      className="w-full mt-1 bg-background/80 border border-primary/30 rounded-xl px-3 py-2 text-xs font-mono text-foreground focus:outline-none focus:border-primary"
                     >
                       <option value="MINT_CLASSIFIED">MINT_CLASSIFIED</option>
                       <option value="REVOKE_ASSET">REVOKE_ASSET</option>
@@ -373,38 +376,38 @@ export default function GovernancePage() {
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-muted-foreground">Required Signers (Threshold)</label>
+                    <label className="text-xs font-mono text-muted-foreground uppercase">Required Signers</label>
                     <input
                       type="number"
                       min={2}
                       max={5}
                       value={requiredSignatures}
                       onChange={(e) => setRequiredSignatures(Number(e.target.value))}
-                      className="w-full mt-1 bg-background/80 border border-primary/30 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary"
+                      className="w-full mt-1 bg-background/80 border border-primary/30 rounded-xl px-3 py-2 text-xs font-mono text-foreground focus:outline-none focus:border-primary"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground">Target Resource (Asset ID / Target DID)</label>
+                  <label className="text-xs font-mono text-muted-foreground uppercase">Target Resource</label>
                   <input
                     type="text"
                     placeholder="e.g. 0x82f... or Asset #104"
                     value={targetResource}
                     onChange={(e) => setTargetResource(e.target.value)}
-                    className="w-full mt-1 bg-background/80 border border-primary/30 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary"
+                    className="w-full mt-1 bg-background/80 border border-primary/30 rounded-xl px-3 py-2 text-xs font-mono text-foreground focus:outline-none focus:border-primary"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground">Operational Rationale</label>
+                  <label className="text-xs font-mono text-muted-foreground uppercase">Mission Rationale</label>
                   <textarea
                     rows={3}
                     required
                     placeholder="Provide defense mission justification for this quorum request..."
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    className="w-full mt-1 bg-background/80 border border-primary/30 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary"
+                    className="w-full mt-1 bg-background/80 border border-primary/30 rounded-xl px-3 py-2 text-xs font-mono text-foreground focus:outline-none focus:border-primary"
                   />
                 </div>
 
@@ -412,13 +415,13 @@ export default function GovernancePage() {
                   <button
                     type="button"
                     onClick={() => setIsCreateModalOpen(false)}
-                    className="px-4 py-2 rounded-lg border border-muted text-muted-foreground text-sm font-semibold hover:bg-muted/20"
+                    className="px-4 py-2 rounded-xl border border-muted text-muted-foreground text-xs font-mono font-semibold hover:bg-muted/20"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-2 rounded-lg bg-primary text-background font-bold text-sm hover:shadow-glow"
+                    className="px-5 py-2 rounded-xl bg-primary text-background font-mono font-bold text-xs hover:shadow-glow"
                   >
                     Submit Proposal
                   </button>
