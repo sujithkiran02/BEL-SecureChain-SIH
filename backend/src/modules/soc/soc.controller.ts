@@ -71,4 +71,8 @@ router.post('/alerts/:id/resolve', async (req: Request, res: Response) => {
   }
 });
 
+import { attackDemoRouter } from './attack-demo.controller';
+
+router.use('/attack-demo', attackDemoRouter);
+
 export const socRouter = router;

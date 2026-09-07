@@ -43,6 +43,8 @@ const navSections: { title: string; items: NavItem[] }[] = [
     items: [
       { href: '/dashboard', label: 'Command Center', icon: LayoutDashboard },
       { href: '/dashboard/identity', label: 'Decentralized ID (DID)', icon: UserCircle },
+      { href: '/dashboard/credentials', label: 'Verifiable Credentials (VC)', icon: KeyRound, badge: 'PQC ML-DSA', badgeColor: 'bg-purple-500/20 text-purple-400 border-purple-500/40' },
+      { href: '/dashboard/facilities', label: 'Multi-Facility & Biometrics', icon: ShieldAlert, badge: 'ZERO-TRUST', badgeColor: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' },
       { href: '/dashboard/rbac', label: 'Access Control (RBAC)', icon: ShieldCheck },
       { href: '/dashboard/assets', label: 'Asset Vault (NFT)', icon: FolderLock },
     ],
@@ -50,6 +52,7 @@ const navSections: { title: string; items: NavItem[] }[] = [
   {
     title: 'DEFENSE & THREAT INTEL',
     items: [
+      { href: '/dashboard/security-demo', label: 'Security Attack Sandbox', icon: ShieldAlert, badge: 'JUDGE DEMO', badgeColor: 'bg-amber-500/20 text-amber-400 border-amber-500/40' },
       { href: '/soc', label: 'SOC Threat Radar', icon: Radio, badge: 'LIVE', badgeColor: 'bg-red-500/20 text-red-400 border-red-500/40 animate-pulse' },
       { href: '/governance', label: 'Quorum Governance', icon: Users, badge: 'M-of-N', badgeColor: 'bg-primary/20 text-primary border-primary/40' },
       { href: '/dashboard/logs', label: 'Immutable Audit Logs', icon: History },
@@ -59,7 +62,7 @@ const navSections: { title: string; items: NavItem[] }[] = [
   {
     title: 'PUBLIC VERIFICATION',
     items: [
-      { href: '/verify', label: 'Asset Verification Portal', icon: CheckCircle2 },
+      { href: '/verify', label: 'Asset & VC Verifier', icon: CheckCircle2 },
     ],
   },
 ];
