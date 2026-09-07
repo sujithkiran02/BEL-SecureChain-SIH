@@ -56,7 +56,7 @@ app.get('/api/biometric/status', requireAuth, BiometricController.getStatus);
 // ==========================================
 app.get('/api/zero-trust/logs', requireAuth, async (req, res) => {
   try {
-    const logs = await prisma.zeroTrustDecisionLog.findMany({
+    const logs = await (prisma as any).zeroTrustDecisionLog.findMany({
       take: 50,
       orderBy: { timestamp: 'desc' }
     });
