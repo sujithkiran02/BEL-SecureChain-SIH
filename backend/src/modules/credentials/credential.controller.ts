@@ -254,6 +254,45 @@ export class CredentialController {
   }
 
   /**
+   * POST /api/credentials/presentation/challenge
+   * Request a cryptographically random challenge for presenting a Verifiable Credential
+   */
+  public static async requestPresentationChallenge(req: Request, res: Response): Promise<void> {
+    try {
+      const wallet = (req as any).user.address;
+      const { audience } = req.body;
+      const challengeObj = await CredentialService.createPresentationChallenge(wallet, audience);
+      res.json(challengeObj);
+    } catch (error: any) {
+      res.status(500).json({ error: 'Failed to create presentation challenge' });
+    }
+  }
+
+  /**
+   * POST /api/credentials/presentation/verify
+   * Cryptographically verify a Holder-Bound Verifiable Presentation
+   */
+  public static async verifyPresentation(req: Request, res: Response): Promise<void> {
+    try {
+      const { presentation, expectedAudience } = req.body;
+      if (!presentation) {
+        res.status(400).json({ error: 'presentation payload is required' });
+        return;
+      }
+
+      const result = await CredentialService.verifyPresentation({
+        presentation,
+        expectedAudience
+      });
+
+      res.status(result.valid ? 200 : 403).json(result);
+    } catch (error: any) {
+      console.error('Presentation verification error:', error);
+      res.status(500).json({ error: error.message || 'Failed to verify presentation' });
+    }
+  }
+
+  /**
    * GET /api/pqc/info
    * Public info about BEL Authority Post-Quantum Cryptography parameters
    */

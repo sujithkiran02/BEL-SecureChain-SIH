@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { PORT } from './config';
 import { verifySignature, getNonce } from './modules/auth/auth.controller';
+import { DidAuthController } from './modules/did/did-auth.controller';
 import { requireAuth, requireRole } from './middlewares/auth.middleware';
 import { startListener } from './chain/listener';
 import { getAllIdentities, getIdentity } from './modules/identity/identity.controller';
@@ -24,10 +25,14 @@ app.use(cors());
 app.use(express.json());
 
 // ==========================================
-// 1. Authentication (SIWE + Replay Protection)
+// 1. DID Challenge-Response & SIWE Auth
 // ==========================================
 app.get('/api/auth/nonce', getNonce);
 app.post('/api/auth/verify', verifySignature);
+
+// Dedicated DID Proof-of-Possession Challenge-Response
+app.post('/api/did/auth/challenge', DidAuthController.requestChallenge);
+app.post('/api/did/auth/verify', DidAuthController.verifyChallenge);
 
 // ==========================================
 // 2. DID & W3C Verifiable Credentials
@@ -40,6 +45,10 @@ app.get('/api/credentials/my-credentials', requireAuth, CredentialController.get
 app.get('/api/credentials/:id', requireAuth, CredentialController.getById);
 app.post('/api/credentials/verify', CredentialController.verify);
 app.post('/api/credentials/:id/revoke', requireAuth, requireRole(['ADMIN_ROLE', 'MANAGER_ROLE']), CredentialController.revoke);
+
+// Holder-Bound Presentation Flow
+app.post('/api/credentials/presentation/challenge', requireAuth, CredentialController.requestPresentationChallenge);
+app.post('/api/credentials/presentation/verify', CredentialController.verifyPresentation);
 
 // ==========================================
 // 3. Multi-Facility & Biometric Layer
@@ -56,7 +65,7 @@ app.get('/api/biometric/status', requireAuth, BiometricController.getStatus);
 // ==========================================
 app.get('/api/zero-trust/logs', requireAuth, async (req, res) => {
   try {
-    const logs = await (prisma as any).zeroTrustDecisionLog.findMany({
+    const logs = await prisma.zeroTrustDecisionLog.findMany({
       take: 50,
       orderBy: { timestamp: 'desc' }
     });

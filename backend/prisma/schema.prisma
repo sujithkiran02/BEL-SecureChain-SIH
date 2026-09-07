@@ -166,9 +166,23 @@ model ZeroTrustDecisionLog {
   action           String   // ENTER, VIEW, DOWNLOAD, ISSUE, REVOKE
   facilityId       String?
   decision         String   // ALLOW, DENY
+  reasonCode       String   @default("DECISION_LOGGED")
   reason           String
   evaluatedFactors String   // JSON string of factor evaluation results
   timestamp        DateTime @default(now())
+}
+
+model EmergencyOverride {
+  id               String   @id @default(uuid())
+  subjectDid       String
+  subjectWallet    String
+  resourceType     String   // FACILITY, ASSET, ADMIN_OPERATION
+  resourceId       String
+  reason           String
+  approvingOfficer String
+  expiresAt        DateTime
+  active           Boolean  @default(true)
+  createdAt        DateTime @default(now())
 }
 
 model NonceRecord {

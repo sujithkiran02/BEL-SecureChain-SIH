@@ -224,13 +224,87 @@ export default function RBACPage() {
               </p>
             </div>
           </div>
-
-          <div className="pt-3 mt-3 border-t border-muted/60 dark:border-white/5 flex items-center justify-between text-xs font-mono text-muted-foreground">
-            <span className="truncate max-w-[200px]">0x9d8e...1b2c</span>
-            <span className="text-primary font-semibold">Sepolia EVM Verified</span>
-          </div>
         </AnimatedCard>
       </div>
+
+      {/* Zero-Trust Multi-Factor Permission Matrix Table */}
+      <AnimatedCard className="p-4 sm:p-6 border border-muted/80 dark:border-white/10 bg-card space-y-4 shadow-sm">
+        <div className="flex items-center justify-between border-b border-muted/60 dark:border-white/5 pb-3">
+          <div className="flex items-center gap-2">
+            <Shield className="w-5 h-5 text-primary" />
+            <div>
+              <h2 className="text-base font-bold text-foreground font-heading">Zero-Trust Multi-Factor Policy Matrix</h2>
+              <p className="text-xs text-muted-foreground">Dynamic evaluation across Role, Resource, Facility, Clearance, and Biometric Factors</p>
+            </div>
+          </div>
+          <span className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary">
+            DENY-BY-DEFAULT
+          </span>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs font-mono">
+            <thead>
+              <tr className="border-b border-muted/60 text-muted-foreground">
+                <th className="pb-3">ROLE</th>
+                <th className="pb-3">RESOURCE</th>
+                <th className="pb-3">ACTION</th>
+                <th className="pb-3">FACILITY</th>
+                <th className="pb-3">REQ. CLEARANCE</th>
+                <th className="pb-3">BIOMETRIC</th>
+                <th className="pb-3 text-right">EVALUATION</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-muted/40">
+              <tr className="hover:bg-muted/20">
+                <td className="py-3 font-bold text-primary">ADMIN</td>
+                <td className="py-3 text-foreground">Smart Contracts</td>
+                <td className="py-3 text-muted-foreground">UPGRADE / REVOKE</td>
+                <td className="py-3 text-muted-foreground">FACILITY-A</td>
+                <td className="py-3 text-amber-400 font-bold">Level 5</td>
+                <td className="py-3 text-red-400 font-bold">MANDATORY</td>
+                <td className="py-3 text-right"><span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">ALLOW</span></td>
+              </tr>
+              <tr className="hover:bg-muted/20">
+                <td className="py-3 font-bold text-primary">MANAGER</td>
+                <td className="py-3 text-foreground">Classified Radar Specs</td>
+                <td className="py-3 text-muted-foreground">DOWNLOAD</td>
+                <td className="py-3 text-muted-foreground">FACILITY-B</td>
+                <td className="py-3 text-amber-400 font-bold">Level 4</td>
+                <td className="py-3 text-red-400 font-bold">MANDATORY</td>
+                <td className="py-3 text-right"><span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">ALLOW</span></td>
+              </tr>
+              <tr className="hover:bg-muted/20">
+                <td className="py-3 font-bold text-purple-400">AUDITOR</td>
+                <td className="py-3 text-foreground">Immutable Blockchain Logs</td>
+                <td className="py-3 text-muted-foreground">INSPECT</td>
+                <td className="py-3 text-muted-foreground">ALL</td>
+                <td className="py-3 text-amber-400 font-bold">Level 3</td>
+                <td className="py-3 text-muted-foreground">OPTIONAL</td>
+                <td className="py-3 text-right"><span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">ALLOW</span></td>
+              </tr>
+              <tr className="hover:bg-muted/20">
+                <td className="py-3 font-bold text-emerald-400">USER</td>
+                <td className="py-3 text-foreground">Avionics Blueprint</td>
+                <td className="py-3 text-muted-foreground">VIEW</td>
+                <td className="py-3 text-muted-foreground">FACILITY-C</td>
+                <td className="py-3 text-amber-400 font-bold">Level 2</td>
+                <td className="py-3 text-muted-foreground">OPTIONAL</td>
+                <td className="py-3 text-right"><span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">ALLOW</span></td>
+              </tr>
+              <tr className="hover:bg-muted/20">
+                <td className="py-3 font-bold text-emerald-400">USER</td>
+                <td className="py-3 text-foreground">Top-Secret Radar Data</td>
+                <td className="py-3 text-muted-foreground">DOWNLOAD</td>
+                <td className="py-3 text-muted-foreground">FACILITY-B</td>
+                <td className="py-3 text-red-400 font-bold">Level 4 (Has: 1)</td>
+                <td className="py-3 text-red-400 font-bold">MANDATORY</td>
+                <td className="py-3 text-right"><span className="px-2 py-0.5 rounded bg-red-500/20 text-red-400 border border-red-500/40">DENY (INSUFFICIENT_CLEARANCE)</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </AnimatedCard>
     </div>
   );
 }

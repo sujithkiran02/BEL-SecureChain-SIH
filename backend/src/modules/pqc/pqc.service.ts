@@ -1,5 +1,7 @@
 import { ml_dsa65 } from '@noble/post-quantum/ml-dsa.js';
 import crypto from 'crypto';
+import dotenv from 'dotenv';
+dotenv.config();
 
 export interface PqcKeyPair {
   publicKeyHex: string;
@@ -15,13 +17,17 @@ export interface PqcSignatureResult {
   timestamp: string;
 }
 
-// Persistent deterministic Authority PQC Keypair for Bharat Electronics Limited (BEL)
+// Ensure BEL Authority PQC Seed is strictly configured in environment
+const rawSeed = process.env.BEL_PQC_SEED;
+if (!rawSeed) {
+  throw new Error('FATAL SECURITY CONFIGURATION ERROR: BEL_PQC_SEED is required in environment variables.');
+}
+
 const BEL_AUTHORITY_SEED = crypto
   .createHash('sha256')
-  .update(process.env.BEL_PQC_SEED || 'BEL-SECURECHAIN-AUTHORITY-ROOT-SEED-2026-NIST-FIPS-204')
+  .update(rawSeed)
   .digest();
 
-// Generate 32-byte seed for ML-DSA
 const authoritySeedArray = new Uint8Array(32);
 authoritySeedArray.set(BEL_AUTHORITY_SEED.subarray(0, 32));
 const belAuthorityKeys = ml_dsa65.keygen(authoritySeedArray);
@@ -45,7 +51,7 @@ export class PqcService {
   }
 
   /**
-   * Generate a new PQC ML-DSA keypair for a user or device
+   * Generate a new PQC ML-DSA keypair for a subject or device
    */
   public static generateKeyPair(): PqcKeyPair {
     const keys = ml_dsa65.keygen();
@@ -58,7 +64,21 @@ export class PqcService {
   }
 
   /**
-   * Sign a payload (string or Buffer) with the BEL Authority ML-DSA private key
+   * Derive a deterministic subject PQC keypair from subject wallet/entropy
+   */
+  public static deriveSubjectPqcPublicKey(subjectWallet: string): string {
+    const subjectSeed = crypto
+      .createHash('sha256')
+      .update(`SUBJECT_PQC_KEY_${subjectWallet.toLowerCase()}_${rawSeed}`)
+      .digest();
+    const seedArray = new Uint8Array(32);
+    seedArray.set(subjectSeed.subarray(0, 32));
+    const subjectKeys = ml_dsa65.keygen(seedArray);
+    return Buffer.from(subjectKeys.publicKey).toString('hex');
+  }
+
+  /**
+   * Sign a payload with the BEL Authority ML-DSA private key
    */
   public static signWithAuthority(payload: string | Buffer): PqcSignatureResult {
     const dataBytes = typeof payload === 'string' 
@@ -112,10 +132,35 @@ export class PqcService {
   }
 
   /**
-   * Deterministically hash any JSON object canonically (sorted keys) for signing
+   * Deterministic Recursive RFC 8785 JSON Canonicalization Scheme (JCS)
+   * Deeply sorts all object keys, preserves arrays, and serializes primitives deterministically.
+   */
+  public static canonicalize(data: any): string {
+    if (data === null || typeof data !== 'object') {
+      return JSON.stringify(data);
+    }
+
+    if (Array.isArray(data)) {
+      const canonicalElements = data.map(item => this.canonicalize(item));
+      return `[${canonicalElements.join(',')}]`;
+    }
+
+    const sortedKeys = Object.keys(data).sort();
+    const keyValPairs = sortedKeys.map(key => {
+      const value = data[key];
+      // Skip undefined fields to match JSON serialization
+      if (value === undefined) return null;
+      return `${JSON.stringify(key)}:${this.canonicalize(value)}`;
+    }).filter(Boolean);
+
+    return `{${keyValPairs.join(',')}}`;
+  }
+
+  /**
+   * Compute deterministic SHA-256 hash of canonicalized JSON payload
    */
   public static canonicalHash(data: any): string {
-    const canonicalString = JSON.stringify(data, Object.keys(data).sort());
+    const canonicalString = this.canonicalize(data);
     return crypto.createHash('sha256').update(canonicalString).digest('hex');
   }
 }

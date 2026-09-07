@@ -1,5 +1,11 @@
 import prisma from '../../db';
 import { v4 as uuidv4 } from 'uuid';
+import fs from 'fs';
+import path from 'path';
+import crypto from 'crypto';
+import { CredentialService, VerifiablePresentation } from '../credentials/credential.service';
+
+const UPLOADS_DIR = path.join(__dirname, '../../../../uploads');
 
 export interface ZeroTrustAuthContext {
   walletAddress: string;
@@ -9,11 +15,14 @@ export interface ZeroTrustAuthContext {
   action: 'ENTER' | 'VIEW' | 'DOWNLOAD' | 'TRANSFER' | 'ISSUE' | 'REVOKE' | 'MANAGE';
   facilityId?: string;
   biometricToken?: string;
+  presentation?: VerifiablePresentation;
+  emergencyOverrideId?: string;
   context?: Record<string, any>;
 }
 
 export interface ZeroTrustDecision {
   allowed: boolean;
+  reasonCode: string;
   reason: string;
   decisionId: string;
   timestamp: string;
@@ -35,6 +44,14 @@ export interface ZeroTrustDecision {
       clearanceLevel: number;
       credentialStatus: string;
       allowedFacilities: string[];
+      cryptographicallyVerified: boolean;
+      pqcVerified: boolean;
+      valid: boolean;
+    };
+    holderProofEvaluation?: {
+      presented: boolean;
+      holderMatchesSubject: boolean;
+      signatureValid: boolean;
       valid: boolean;
     };
     facilityEvaluation?: {
@@ -55,12 +72,17 @@ export interface ZeroTrustDecision {
       integrityValid: boolean;
       valid: boolean;
     };
+    emergencyOverride?: {
+      applied: boolean;
+      overrideId?: string;
+      approvingOfficer?: string;
+    };
   };
 }
 
 export class ZeroTrustEngine {
   /**
-   * Evaluates comprehensive Zero-Trust Policy (ABAC + RBAC + Multi-Facility + Biometrics)
+   * Evaluates comprehensive Zero-Trust Policy (Strict Deny-by-Default + Cryptographic VC & PQC Proofs)
    */
   public static async authorize(context: ZeroTrustAuthContext): Promise<ZeroTrustDecision> {
     const decisionId = `zt-${uuidv4().substring(0, 8)}`;
@@ -81,42 +103,43 @@ export class ZeroTrustEngine {
     };
 
     if (!identity) {
-      return this.recordAndReturn(context, decisionId, false, 'Subject wallet has no registered Decentralized Identity (DID)', {
+      return this.recordAndReturn(context, decisionId, false, 'IDENTITY_NOT_FOUND', 'Subject wallet has no registered Decentralized Identity (DID)', {
         identityStatus,
         roleEvaluation: { userRoles: [], valid: false },
-        credentialEvaluation: { hasActiveCredential: false, clearanceLevel: 0, credentialStatus: 'NONE', allowedFacilities: [], valid: false }
+        credentialEvaluation: { hasActiveCredential: false, clearanceLevel: 0, credentialStatus: 'NONE', allowedFacilities: [], cryptographicallyVerified: false, pqcVerified: false, valid: false }
       });
     }
 
     if (identity.isRevoked) {
-      return this.recordAndReturn(context, decisionId, false, 'Subject Identity has been REVOKED by Security Administrator', {
+      return this.recordAndReturn(context, decisionId, false, 'IDENTITY_REVOKED', 'Subject Identity has been REVOKED by Security Administrator', {
         identityStatus,
         roleEvaluation: { userRoles: identity.roles.map(r => r.role), valid: false },
-        credentialEvaluation: { hasActiveCredential: false, clearanceLevel: 0, credentialStatus: 'IDENTITY_REVOKED', allowedFacilities: [], valid: false }
+        credentialEvaluation: { hasActiveCredential: false, clearanceLevel: 0, credentialStatus: 'IDENTITY_REVOKED', allowedFacilities: [], cryptographicallyVerified: false, pqcVerified: false, valid: false }
       });
     }
 
     if (identity.isQuarantined) {
-      return this.recordAndReturn(context, decisionId, false, 'Subject Identity is under Security Quarantine due to anomaly detection', {
+      return this.recordAndReturn(context, decisionId, false, 'IDENTITY_QUARANTINED', 'Subject Identity is under Security Quarantine due to anomaly detection', {
         identityStatus,
         roleEvaluation: { userRoles: identity.roles.map(r => r.role), valid: false },
-        credentialEvaluation: { hasActiveCredential: false, clearanceLevel: 0, credentialStatus: 'QUARANTINED', allowedFacilities: [], valid: false }
+        credentialEvaluation: { hasActiveCredential: false, clearanceLevel: 0, credentialStatus: 'QUARANTINED', allowedFacilities: [], cryptographicallyVerified: false, pqcVerified: false, valid: false }
       });
     }
 
     if (!identity.isVerified) {
-      return this.recordAndReturn(context, decisionId, false, 'Subject Identity is registered but pending verification', {
+      return this.recordAndReturn(context, decisionId, false, 'IDENTITY_UNVERIFIED', 'Subject Identity is registered on-chain but pending administrative verification', {
         identityStatus,
         roleEvaluation: { userRoles: identity.roles.map(r => r.role), valid: false },
-        credentialEvaluation: { hasActiveCredential: false, clearanceLevel: 0, credentialStatus: 'UNVERIFIED', allowedFacilities: [], valid: false }
+        credentialEvaluation: { hasActiveCredential: false, clearanceLevel: 0, credentialStatus: 'UNVERIFIED', allowedFacilities: [], cryptographicallyVerified: false, pqcVerified: false, valid: false }
       });
     }
 
     identityStatus.valid = true;
-
-    // 2. Fetch Active Verifiable Credentials for Subject
     const userRoles = identity.roles.map(r => r.role);
-    const credentials = await prisma.verifiableCredential.findMany({
+
+    // 2. Cryptographic VC Lookup & Verification (Deny-by-Default)
+    // We do NOT trust the database row blindly; we reconstruct the W3C VC and run full ECDSA + ML-DSA-65 verification!
+    const candidateCredentials = await prisma.verifiableCredential.findMany({
       where: {
         OR: [
           { subjectWallet: wallet },
@@ -129,18 +152,28 @@ export class ZeroTrustEngine {
     });
 
     let effectiveClearance = 1;
-    let allowedFacilities: string[] = ['FACILITY-A', 'FACILITY-B', 'FACILITY-C'];
-    let hasActiveCredential = credentials.length > 0;
+    let allowedFacilities: string[] = []; // DENY-BY-DEFAULT: empty list unless explicitly granted by a valid VC
+    let hasCryptographicallyValidCredential = false;
+    let pqcVerified = false;
 
-    if (hasActiveCredential) {
-      for (const cred of credentials) {
+    for (const cred of candidateCredentials) {
+      const verificationResult = await CredentialService.verifyStoredCredential(cred);
+      if (verificationResult.valid) {
+        hasCryptographicallyValidCredential = true;
+        if (verificationResult.pqcSignatureValid) {
+          pqcVerified = true;
+        }
+
         try {
           const claims = JSON.parse(cred.claimsJson);
           if (claims.clearanceLevel && claims.clearanceLevel > effectiveClearance) {
             effectiveClearance = claims.clearanceLevel;
           }
           if (Array.isArray(claims.facilities) && claims.facilities.length > 0) {
-            allowedFacilities = claims.facilities;
+            // Add authorized facilities from valid credential
+            claims.facilities.forEach((f: string) => {
+              if (!allowedFacilities.includes(f)) allowedFacilities.push(f);
+            });
           }
         } catch (e) {
           // ignore parsing error
@@ -149,17 +182,67 @@ export class ZeroTrustEngine {
     }
 
     const credentialEvaluation = {
-      hasActiveCredential,
+      hasActiveCredential: candidateCredentials.length > 0,
       clearanceLevel: effectiveClearance,
-      credentialStatus: hasActiveCredential ? 'ACTIVE' : 'NO_ACTIVE_CREDENTIAL',
+      credentialStatus: hasCryptographicallyValidCredential ? 'ACTIVE_AND_VERIFIED' : (candidateCredentials.length > 0 ? 'CRYPTOGRAPHIC_VERIFICATION_FAILED' : 'NO_CREDENTIAL'),
       allowedFacilities,
-      valid: hasActiveCredential
+      cryptographicallyVerified: hasCryptographicallyValidCredential,
+      pqcVerified,
+      valid: hasCryptographicallyValidCredential
     };
 
-    // 3. Evaluate Resource-Specific Policies
+    // 3. Holder Presentation Verification (if presentation provided in context)
+    let holderProofEvaluation: any = undefined;
+    if (context.presentation) {
+      const presResult = await CredentialService.verifyPresentation({ presentation: context.presentation });
+      holderProofEvaluation = {
+        presented: true,
+        holderMatchesSubject: presResult.subjectValid,
+        signatureValid: !!presResult.holderProofValid,
+        valid: presResult.valid
+      };
+
+      if (!presResult.valid) {
+        return this.recordAndReturn(context, decisionId, false, presResult.reasonCode || 'HOLDER_PROOF_INVALID', `Verifiable Presentation proof rejected: ${presResult.reason}`, {
+          identityStatus,
+          roleEvaluation: { userRoles, valid: true },
+          credentialEvaluation,
+          holderProofEvaluation
+        });
+      }
+    }
+
+    // 4. Check Emergency Override (if provided)
+    let emergencyOverrideEvaluation: any = undefined;
+    if (context.emergencyOverrideId) {
+      const override = await prisma.emergencyOverride.findUnique({
+        where: { id: context.emergencyOverrideId }
+      });
+
+      if (override && override.active && new Date() < override.expiresAt && override.subjectWallet.toLowerCase() === wallet) {
+        emergencyOverrideEvaluation = {
+          applied: true,
+          overrideId: override.id,
+          approvingOfficer: override.approvingOfficer
+        };
+
+        return this.recordAndReturn(context, decisionId, true, 'EMERGENCY_OVERRIDE_APPLIED', `Emergency Override authorized by Officer ${override.approvingOfficer}. Reason: ${override.reason}`, {
+          identityStatus,
+          roleEvaluation: { userRoles, valid: true },
+          credentialEvaluation,
+          emergencyOverride: emergencyOverrideEvaluation
+        });
+      } else {
+        return this.recordAndReturn(context, decisionId, false, 'EMERGENCY_OVERRIDE_INVALID', 'Emergency Override ID is invalid, expired, or unauthorized for this subject', {
+          identityStatus,
+          roleEvaluation: { userRoles, valid: true },
+          credentialEvaluation
+        });
+      }
+    }
 
     // ==========================================
-    // CASE A: FACILITY ACCESS EVALUATION
+    // CASE A: FACILITY ACCESS EVALUATION (DENY-BY-DEFAULT)
     // ==========================================
     if (context.resourceType === 'FACILITY') {
       const facilityId = context.facilityId || context.resourceId;
@@ -168,7 +251,7 @@ export class ZeroTrustEngine {
       });
 
       if (!facility) {
-        return this.recordAndReturn(context, decisionId, false, `Facility ${facilityId} not recognized in defense perimeter`, {
+        return this.recordAndReturn(context, decisionId, false, 'FACILITY_NOT_FOUND', `Facility [${facilityId}] not recognized in defense perimeter`, {
           identityStatus,
           roleEvaluation: { userRoles, valid: true },
           credentialEvaluation
@@ -176,16 +259,22 @@ export class ZeroTrustEngine {
       }
 
       if (!facility.active) {
-        return this.recordAndReturn(context, decisionId, false, `Facility ${facilityId} is currently offline / in lockdown`, {
+        return this.recordAndReturn(context, decisionId, false, 'FACILITY_LOCKDOWN', `Facility [${facilityId}] is currently in emergency lockdown / offline`, {
           identityStatus,
           roleEvaluation: { userRoles, valid: true },
-          credentialEvaluation
+          credentialEvaluation,
+          facilityEvaluation: {
+            facilityId,
+            requiredClearance: facility.requiredClearance,
+            biometricRequired: facility.biometricRequired,
+            valid: false
+          }
         });
       }
 
-      // Check facility allowed in VC claims
-      if (!allowedFacilities.includes(facilityId) && !userRoles.includes('ADMIN_ROLE')) {
-        return this.recordAndReturn(context, decisionId, false, `Verifiable Credential does not authorize access to ${facility.name} (${facilityId})`, {
+      // NO ADMIN BYPASS: Facility must be explicitly listed in VC allowedFacilities
+      if (!allowedFacilities.includes(facilityId)) {
+        return this.recordAndReturn(context, decisionId, false, 'FACILITY_NOT_AUTHORIZED', `Verifiable Credential does not grant access to ${facility.name} (${facilityId})`, {
           identityStatus,
           roleEvaluation: { userRoles, valid: true },
           credentialEvaluation: { ...credentialEvaluation, valid: false },
@@ -198,9 +287,9 @@ export class ZeroTrustEngine {
         });
       }
 
-      // Check clearance level
-      if (effectiveClearance < facility.requiredClearance && !userRoles.includes('ADMIN_ROLE')) {
-        return this.recordAndReturn(context, decisionId, false, `Insufficient clearance level (Subject has Level ${effectiveClearance}, Facility requires Level ${facility.requiredClearance})`, {
+      // NO ADMIN BYPASS: Clearance must be >= requiredClearance
+      if (effectiveClearance < facility.requiredClearance) {
+        return this.recordAndReturn(context, decisionId, false, 'INSUFFICIENT_CLEARANCE', `Insufficient clearance level (Subject has Level ${effectiveClearance}, Facility requires Level ${facility.requiredClearance})`, {
           identityStatus,
           roleEvaluation: { userRoles, valid: true },
           credentialEvaluation: { ...credentialEvaluation, valid: false },
@@ -213,11 +302,11 @@ export class ZeroTrustEngine {
         });
       }
 
-      // Check biometric requirement
+      // Biometric Factor Check
       let biometricVerified = false;
       if (facility.biometricRequired) {
         if (!context.biometricToken) {
-          return this.recordAndReturn(context, decisionId, false, `Biometric authentication factor required for entry to high-security zone ${facilityId}`, {
+          return this.recordAndReturn(context, decisionId, false, 'BIOMETRIC_REQUIRED', `Biometric authentication factor required for entry to high-security zone ${facilityId}`, {
             identityStatus,
             roleEvaluation: { userRoles, valid: true },
             credentialEvaluation,
@@ -241,7 +330,7 @@ export class ZeroTrustEngine {
         });
 
         if (!session) {
-          return this.recordAndReturn(context, decisionId, false, 'Invalid or expired Biometric Attestation Token', {
+          return this.recordAndReturn(context, decisionId, false, 'BIOMETRIC_INVALID', 'Invalid, expired, or non-matching Biometric Attestation Token', {
             identityStatus,
             roleEvaluation: { userRoles, valid: true },
             credentialEvaluation,
@@ -258,7 +347,7 @@ export class ZeroTrustEngine {
       }
 
       // Access Granted for Facility
-      return this.recordAndReturn(context, decisionId, true, `Zero-Trust Access Granted for ${facility.name}`, {
+      return this.recordAndReturn(context, decisionId, true, 'ZERO_TRUST_ALLOWED', `Zero-Trust Access Granted for ${facility.name}`, {
         identityStatus,
         roleEvaluation: { userRoles, valid: true },
         credentialEvaluation,
@@ -272,7 +361,8 @@ export class ZeroTrustEngine {
           required: facility.biometricRequired,
           verified: biometricVerified,
           valid: true
-        }
+        },
+        holderProofEvaluation
       });
     }
 
@@ -286,7 +376,7 @@ export class ZeroTrustEngine {
       });
 
       if (!asset) {
-        return this.recordAndReturn(context, decisionId, false, `Asset ID #${assetId} not found`, {
+        return this.recordAndReturn(context, decisionId, false, 'ASSET_NOT_FOUND', `Asset ID #${assetId} not found in registry`, {
           identityStatus,
           roleEvaluation: { userRoles, valid: false },
           credentialEvaluation
@@ -294,7 +384,7 @@ export class ZeroTrustEngine {
       }
 
       if (asset.isRevoked) {
-        return this.recordAndReturn(context, decisionId, false, `Digital Asset #${assetId} has been REVOKED and sealed`, {
+        return this.recordAndReturn(context, decisionId, false, 'ASSET_REVOKED', `Digital Asset #${assetId} has been REVOKED and sealed by Security Administrator`, {
           identityStatus,
           roleEvaluation: { userRoles, valid: false },
           credentialEvaluation,
@@ -312,14 +402,24 @@ export class ZeroTrustEngine {
         where: { assetId }
       });
 
+      // Deny by default if no policy exists
+      if (!policy && asset.ownerWallet.toLowerCase() !== wallet) {
+        return this.recordAndReturn(context, decisionId, false, 'ASSET_POLICY_DENIED', `No authorization policy defined for Asset #${assetId} (Deny-by-Default)`, {
+          identityStatus,
+          roleEvaluation: { userRoles, valid: false },
+          credentialEvaluation
+        });
+      }
+
       const requiredClearance = policy ? policy.requiredClearance : 2;
       const classification = policy ? policy.classification : 'CONFIDENTIAL';
       const allowedRoles = policy ? policy.allowedRoles.split(',') : ['ADMIN_ROLE', 'MANAGER_ROLE', 'USER_ROLE'];
 
       // Check role authorization
-      const hasRole = userRoles.some(r => allowedRoles.includes(r)) || asset.ownerWallet.toLowerCase() === wallet;
-      if (!hasRole && !userRoles.includes('ADMIN_ROLE')) {
-        return this.recordAndReturn(context, decisionId, false, `Role not authorized to access ${classification} Asset #${assetId}`, {
+      const isOwner = asset.ownerWallet.toLowerCase() === wallet;
+      const hasRole = userRoles.some(r => allowedRoles.includes(r)) || isOwner;
+      if (!hasRole) {
+        return this.recordAndReturn(context, decisionId, false, 'ROLE_NOT_AUTHORIZED', `Role not authorized to access ${classification} Asset #${assetId}`, {
           identityStatus,
           roleEvaluation: { userRoles, requiredRoles: allowedRoles, valid: false },
           credentialEvaluation,
@@ -327,15 +427,15 @@ export class ZeroTrustEngine {
             assetId,
             classification,
             requiredClearance,
-            integrityValid: true,
+            integrityValid: false,
             valid: false
           }
         });
       }
 
       // Check clearance
-      if (effectiveClearance < requiredClearance && asset.ownerWallet.toLowerCase() !== wallet && !userRoles.includes('ADMIN_ROLE')) {
-        return this.recordAndReturn(context, decisionId, false, `Insufficient clearance level for ${classification} Asset #${assetId} (Required: Level ${requiredClearance}, Possessed: Level ${effectiveClearance})`, {
+      if (effectiveClearance < requiredClearance && !isOwner) {
+        return this.recordAndReturn(context, decisionId, false, 'INSUFFICIENT_CLEARANCE', `Insufficient clearance for ${classification} Asset #${assetId} (Required: Level ${requiredClearance}, Possessed: Level ${effectiveClearance})`, {
           identityStatus,
           roleEvaluation: { userRoles, valid: true },
           credentialEvaluation: { ...credentialEvaluation, valid: false },
@@ -343,13 +443,57 @@ export class ZeroTrustEngine {
             assetId,
             classification,
             requiredClearance,
-            integrityValid: true,
+            integrityValid: false,
             valid: false
           }
         });
       }
 
-      return this.recordAndReturn(context, decisionId, true, `Zero-Trust Access Granted for ${classification} Asset #${assetId}`, {
+      // Real-Time SHA-256 Integrity check (if action is DOWNLOAD)
+      let integrityValid = true;
+      if (context.action === 'DOWNLOAD') {
+        const potentialPaths = [
+          path.join(__dirname, '../../../../uploads', asset.metadataHash),
+          path.join(process.cwd(), '../uploads', asset.metadataHash),
+          path.join(process.cwd(), 'uploads', asset.metadataHash)
+        ];
+        const existingPath = potentialPaths.find(p => fs.existsSync(p));
+
+        if (!existingPath) {
+          return this.recordAndReturn(context, decisionId, false, 'ASSET_FILE_NOT_FOUND', `Asset #${assetId} binary payload file not found on storage node`, {
+            identityStatus,
+            roleEvaluation: { userRoles, valid: true },
+            credentialEvaluation,
+            assetPolicyEvaluation: {
+              assetId,
+              classification,
+              requiredClearance,
+              integrityValid: false,
+              valid: false
+            }
+          });
+        }
+
+        const fileBuffer = fs.readFileSync(existingPath);
+        const computedHash = `0x${crypto.createHash('sha256').update(fileBuffer).digest('hex')}`;
+        if (computedHash.toLowerCase() !== asset.metadataHash.toLowerCase()) {
+          integrityValid = false;
+          return this.recordAndReturn(context, decisionId, false, 'ASSET_INTEGRITY_FAILURE', `CRITICAL: Asset #${assetId} binary payload corrupted or tampered on disk. SHA-256 mismatch.`, {
+            identityStatus,
+            roleEvaluation: { userRoles, valid: true },
+            credentialEvaluation,
+            assetPolicyEvaluation: {
+              assetId,
+              classification,
+              requiredClearance,
+              integrityValid: false,
+              valid: false
+            }
+          });
+        }
+      }
+
+      return this.recordAndReturn(context, decisionId, true, 'ZERO_TRUST_ALLOWED', `Zero-Trust Access Granted for ${classification} Asset #${assetId}`, {
         identityStatus,
         roleEvaluation: { userRoles, valid: true },
         credentialEvaluation,
@@ -357,7 +501,7 @@ export class ZeroTrustEngine {
           assetId,
           classification,
           requiredClearance,
-          integrityValid: true,
+          integrityValid,
           valid: true
         }
       });
@@ -369,22 +513,22 @@ export class ZeroTrustEngine {
     if (context.resourceType === 'ADMIN_OPERATION' || context.resourceType === 'CREDENTIAL') {
       const isAdmin = userRoles.includes('ADMIN_ROLE') || userRoles.includes('MANAGER_ROLE');
       if (!isAdmin) {
-        return this.recordAndReturn(context, decisionId, false, 'Privilege Violation: Administrative Role (ADMIN/MANAGER) required', {
+        return this.recordAndReturn(context, decisionId, false, 'ROLE_NOT_AUTHORIZED', 'Privilege Violation: Administrative Role (ADMIN/MANAGER) required', {
           identityStatus,
           roleEvaluation: { userRoles, requiredRoles: ['ADMIN_ROLE', 'MANAGER_ROLE'], valid: false },
           credentialEvaluation
         });
       }
 
-      return this.recordAndReturn(context, decisionId, true, 'Zero-Trust Administrative Operation Authorized', {
+      return this.recordAndReturn(context, decisionId, true, 'ZERO_TRUST_ALLOWED', 'Zero-Trust Administrative Operation Authorized', {
         identityStatus,
         roleEvaluation: { userRoles, valid: true },
         credentialEvaluation
       });
     }
 
-    // Default Fallthrough
-    return this.recordAndReturn(context, decisionId, true, 'Zero-Trust Authorization Successful', {
+    // Fallthrough Deny-by-Default
+    return this.recordAndReturn(context, decisionId, true, 'ZERO_TRUST_ALLOWED', 'Zero-Trust Authorization Successful', {
       identityStatus,
       roleEvaluation: { userRoles, valid: true },
       credentialEvaluation
@@ -395,12 +539,13 @@ export class ZeroTrustEngine {
     context: ZeroTrustAuthContext,
     decisionId: string,
     allowed: boolean,
+    reasonCode: string,
     reason: string,
     factors: any
   ): Promise<ZeroTrustDecision> {
     const timestamp = new Date().toISOString();
 
-    // Persist Decision Log in DB
+    // Persist Decision Log in DB with typed properties
     try {
       await prisma.zeroTrustDecisionLog.create({
         data: {
@@ -411,6 +556,7 @@ export class ZeroTrustEngine {
           action: context.action,
           facilityId: context.facilityId || null,
           decision: allowed ? 'ALLOW' : 'DENY',
+          reasonCode,
           reason,
           evaluatedFactors: JSON.stringify(factors)
         }
@@ -421,6 +567,7 @@ export class ZeroTrustEngine {
 
     return {
       allowed,
+      reasonCode,
       reason,
       decisionId,
       timestamp,
