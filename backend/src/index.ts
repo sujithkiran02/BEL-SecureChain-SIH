@@ -5,11 +5,14 @@ import { verifySignature, getNonce } from './modules/auth/auth.controller';
 import { requireAuth, requireRole } from './middlewares/auth.middleware';
 import { startListener } from './chain/listener';
 import { getAllIdentities, getIdentity } from './modules/identity/identity.controller';
-import { uploadAsset, downloadAsset } from './modules/assets/asset.controller';
+import { uploadAsset, downloadAsset, getAssetDetails, updateAssetPolicy } from './modules/assets/asset.controller';
 import { getDashboardStats } from './modules/dashboard/dashboard.controller';
 import { verifyAsset } from './modules/verification/verify.controller';
 import { socRouter } from './modules/soc/soc.controller';
 import { quorumRouter } from './modules/quorum/quorum.controller';
+import { CredentialController } from './modules/credentials/credential.controller';
+import { FacilityController } from './modules/facilities/facility.controller';
+import { BiometricController } from './modules/biometrics/biometric.controller';
 import prisma from './db';
 import multer from 'multer';
 
@@ -20,17 +23,62 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Auth routes
+// ==========================================
+// 1. Authentication (SIWE + Replay Protection)
+// ==========================================
 app.get('/api/auth/nonce', getNonce);
 app.post('/api/auth/verify', verifySignature);
 
-// SOC Defense & Threat Detection
+// ==========================================
+// 2. DID & W3C Verifiable Credentials
+// ==========================================
+app.get('/api/did/resolve/:did', CredentialController.resolveDid);
+app.get('/api/pqc/info', CredentialController.getPqcInfo);
+
+app.post('/api/credentials/issue', requireAuth, requireRole(['ADMIN_ROLE', 'MANAGER_ROLE']), CredentialController.issue);
+app.get('/api/credentials/my-credentials', requireAuth, CredentialController.getMyCredentials);
+app.get('/api/credentials/:id', requireAuth, CredentialController.getById);
+app.post('/api/credentials/verify', CredentialController.verify);
+app.post('/api/credentials/:id/revoke', requireAuth, requireRole(['ADMIN_ROLE', 'MANAGER_ROLE']), CredentialController.revoke);
+
+// ==========================================
+// 3. Multi-Facility & Biometric Layer
+// ==========================================
+app.get('/api/facilities', requireAuth, FacilityController.listFacilities);
+app.post('/api/facilities/:id/request-access', requireAuth, FacilityController.requestAccess);
+app.get('/api/facilities/logs', requireAuth, FacilityController.getLogs);
+
+app.post('/api/biometric/verify', requireAuth, BiometricController.verify);
+app.get('/api/biometric/status', requireAuth, BiometricController.getStatus);
+
+// ==========================================
+// 4. Zero-Trust Access & Audit Logs
+// ==========================================
+app.get('/api/zero-trust/logs', requireAuth, async (req, res) => {
+  try {
+    const logs = await prisma.zeroTrustDecisionLog.findMany({
+      take: 50,
+      orderBy: { timestamp: 'desc' }
+    });
+    res.json({ logs });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to retrieve Zero-Trust decision logs' });
+  }
+});
+
+// ==========================================
+// 5. SOC Defense & Threat Detection
+// ==========================================
 app.use('/api/soc', socRouter);
 
-// Multi-Party Quorum Governance
+// ==========================================
+// 6. Multi-Party Quorum Governance
+// ==========================================
 app.use('/api/quorum', quorumRouter);
 
-// Audit route
+// ==========================================
+// 7. Blockchain Audit Timeline
+// ==========================================
 app.get('/api/audit/timeline', requireAuth, async (req, res) => {
   try {
     const entries = await prisma.auditEntry.findMany({
@@ -44,12 +92,14 @@ app.get('/api/audit/timeline', requireAuth, async (req, res) => {
   }
 });
 
-// Identity routes
+// ==========================================
+// 8. Identity Registry API
+// ==========================================
 app.get('/api/identities', requireAuth, requireRole(['ADMIN_ROLE', 'MANAGER_ROLE', 'AUDITOR_ROLE']), getAllIdentities);
 app.get('/api/identities/:walletAddress', requireAuth, getIdentity);
 
 app.get('/api/identity/me', requireAuth, async (req, res) => {
-  const wallet = (req as any).user.address;
+  const wallet = (req as any).user.address.toLowerCase();
   try {
     const identity = await prisma.identity.findUnique({
       where: { walletAddress: wallet },
@@ -61,18 +111,22 @@ app.get('/api/identity/me', requireAuth, async (req, res) => {
   }
 });
 
-// Asset routes
+// ==========================================
+// 9. Digital Asset Vault & Policies
+// ==========================================
 app.post('/api/assets/upload', requireAuth, upload.single('file'), uploadAsset);
 app.get('/api/assets/:id/download', requireAuth, downloadAsset);
+app.get('/api/assets/:id/policy', requireAuth, getAssetDetails);
+app.post('/api/assets/:id/policy', requireAuth, requireRole(['ADMIN_ROLE', 'MANAGER_ROLE']), updateAssetPolicy);
 
-// Dashboard stats
+// ==========================================
+// 10. Dashboard & Public Verification
+// ==========================================
 app.get('/api/dashboard/stats', requireAuth, getDashboardStats);
-
-// Public Verification
 app.get('/api/verify/:hash', verifyAsset);
 
 app.listen(PORT, () => {
-  console.log(`Backend server running on http://localhost:${PORT}`);
+  console.log(`Defense Backend Server running on http://localhost:${PORT}`);
   // Start the blockchain listener in the background
   startListener();
 });

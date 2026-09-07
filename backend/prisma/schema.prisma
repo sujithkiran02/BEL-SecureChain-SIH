@@ -87,3 +87,95 @@ model ProposalSignature {
 
   @@unique([proposalId, officerWallet])
 }
+
+model VerifiableCredential {
+  id               String   @id @default(uuid())
+  credentialId     String   @unique
+  type             String   // e.g. "VerifiableCredential,EmployeeCredential" or "VerifiableCredential,SecurityClearanceCredential"
+  issuerDid        String
+  subjectDid       String
+  subjectWallet    String
+  claimsJson       String   // JSON string of credentialSubject claims
+  issuanceDate     DateTime @default(now())
+  expirationDate   DateTime
+  status           String   @default("ACTIVE") // ACTIVE, SUSPENDED, REVOKED, EXPIRED
+  revocationReason String?
+  proofJson        String   // ECDSA signature proof
+  pqcProofJson     String?  // Post-Quantum ML-DSA signature proof
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model Facility {
+  facilityId         String   @id // e.g. "FACILITY-A", "FACILITY-B", "FACILITY-C"
+  name               String
+  location           String
+  classification     String   // UNCLASSIFIED, RESTRICTED, CONFIDENTIAL, SECRET, TOP_SECRET
+  requiredClearance  Int      @default(1) // 1 to 5
+  allowedRoles       String   // Comma-separated: "ADMIN,MANAGER,AUDITOR,USER"
+  biometricRequired  Boolean  @default(false)
+  active             Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  accessLogs         FacilityAccessLog[]
+}
+
+model FacilityAccessLog {
+  id                Int      @id @default(autoincrement())
+  facilityId        String
+  facility          Facility @relation(fields: [facilityId], references: [facilityId])
+  subjectDid        String
+  subjectWallet     String
+  decision          String   // ALLOW, DENY
+  reason            String
+  biometricVerified Boolean  @default(false)
+  clearanceLevel    Int      @default(1)
+  timestamp         DateTime @default(now())
+}
+
+model BiometricSession {
+  id            Int      @id @default(autoincrement())
+  sessionToken  String   @unique
+  walletAddress String
+  did           String
+  method        String   // FACE, FINGERPRINT, IRIS, MULTI_MODAL
+  verified      Boolean  @default(true)
+  threatScore   Int      @default(0)
+  expiresAt     DateTime
+  createdAt     DateTime @default(now())
+}
+
+model AssetPolicy {
+  id                 Int      @id @default(autoincrement())
+  assetId            Int      @unique
+  classification     String   @default("CONFIDENTIAL") // UNCLASSIFIED, RESTRICTED, CONFIDENTIAL, SECRET, TOP_SECRET
+  requiredClearance  Int      @default(2)
+  allowedFacilities  String   @default("FACILITY-A,FACILITY-B,FACILITY-C")
+  allowedRoles       String   @default("ADMIN_ROLE,MANAGER_ROLE,USER_ROLE")
+  allowedActions     String   @default("VIEW,DOWNLOAD")
+  integrityHash      String?  // Trusted SHA-256 hash
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model ZeroTrustDecisionLog {
+  id               Int      @id @default(autoincrement())
+  subjectDid       String
+  subjectWallet    String
+  resourceType     String   // FACILITY, ASSET, CREDENTIAL, ADMIN_OPERATION
+  resourceId       String
+  action           String   // ENTER, VIEW, DOWNLOAD, ISSUE, REVOKE
+  facilityId       String?
+  decision         String   // ALLOW, DENY
+  reason           String
+  evaluatedFactors String   // JSON string of factor evaluation results
+  timestamp        DateTime @default(now())
+}
+
+model NonceRecord {
+  nonce         String   @id
+  walletAddress String?
+  domain        String?
+  expiresAt     DateTime
+  used          Boolean  @default(false)
+  createdAt     DateTime @default(now())
+}
