@@ -125,7 +125,7 @@
 - Node.js >= 20.19.0
 - Git
 
-### 1. Clone Repository
+### 1. Clone Repository clone
 ```bash
 git clone https://github.com/sujithkiran02/BEL-SecureChain-SIH.git
 cd BEL-SecureChain-SIH
