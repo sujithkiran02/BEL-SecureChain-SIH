@@ -7,7 +7,7 @@
 
 ---
 
-## 1. System Architecture Design
+## 1. System Architecture and Design
 
 ```text
                          BEL AUTHORITY (PQC Master Key)
