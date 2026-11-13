@@ -3,7 +3,7 @@
 **Smart India Hackathon Problem Statement 2026SIH **  
 
 
-*Bharat Electronics Limited (BEL) Defense Identity, Quantum-Resistant Verifiable Credentials & Zero-Trust Security Perimeter*
+*Bharat Electronics Limited  Defense Identity, Quantum-Resistant Verifiable Credentials & Zero-Trust Security Perimeter*
 
 ---
 
