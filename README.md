@@ -1,6 +1,7 @@
 # BEL SecureChain — Defense-Grade SSI, Post-Quantum Verifiable Credentials & Zero-Trust Architecture
 
 **Smart India Hackathon Problem Statement 2026SIH **  
+BEL TECNO
 
 
 *Bharat Electronics Limited  Defense Identity, Quantum-Resistant Verifiable Credentials & Zero-Trust Security Perimeter*
